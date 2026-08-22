@@ -1,0 +1,31 @@
+{
+  "name": "@kairos/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@clerk/backend": "^3.13.2",
+    "@kairos/db": "workspace:*",
+    "@kairos/env": "workspace:*",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/zod": "catalog:",
+    "@types/pg": "^8.20.0",
+    "dotenv": "catalog:",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@kairos/config": "workspace:*",
+    "elysia": "catalog:",
+    "typescript": "^6.0.3"
+  }
+}
