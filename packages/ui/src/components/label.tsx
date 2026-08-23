@@ -1,10 +1,11 @@
 "use client";
 
 import { cn } from "@kairos/ui/lib/utils";
-import * as React from "react";
+import type * as React from "react";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {
   return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: shadcn primitive — htmlFor/nesting is the caller's job
     <label
       data-slot="label"
       className={cn(

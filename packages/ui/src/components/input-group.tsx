@@ -5,10 +5,11 @@ import { Input } from "@kairos/ui/components/input";
 import { Textarea } from "@kairos/ui/components/textarea";
 import { cn } from "@kairos/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import * as React from "react";
+import type * as React from "react";
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: vendored shadcn primitive — keep upstream markup
     <div
       data-slot="input-group"
       role="group"
@@ -51,6 +52,8 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: vendored shadcn primitive — keep upstream markup
+    // biome-ignore lint/a11y/useKeyWithClickEvents: click-to-focus convenience; keyboard users tab into the input directly
     <div
       role="group"
       data-slot="input-group-addon"
@@ -146,7 +149,7 @@ export {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
-  InputGroupText,
   InputGroupInput,
+  InputGroupText,
   InputGroupTextarea,
 };
