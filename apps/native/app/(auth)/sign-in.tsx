@@ -3,6 +3,8 @@ import { type Href, Link, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { C, SERIF } from "@/lib/theme";
+
 function pushDecoratedUrl(
   router: ReturnType<typeof useRouter>,
   decorateUrl: (url: string) => string,
@@ -37,7 +39,6 @@ export default function Page() {
     });
 
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
       setStatusMessage(error.longMessage ?? "Unable to sign in. Please try again.");
       return;
     }
@@ -45,11 +46,7 @@ export default function Page() {
     if (signIn.status === "complete") {
       await signIn.finalize({
         navigate: ({ session, decorateUrl }) => {
-          if (session?.currentTask) {
-            console.log(session.currentTask);
-            return;
-          }
-
+          if (session?.currentTask) return;
           pushDecoratedUrl(router, decorateUrl, "/");
         },
       });
@@ -58,14 +55,12 @@ export default function Page() {
         await signIn.mfa.sendEmailCode();
         setStatusMessage(`We sent a verification code to ${emailCodeFactor.safeIdentifier}.`);
       } else {
-        console.error("Second factor is required, but email_code is not available:", signIn);
         setStatusMessage(
           "A second factor is required, but this screen only supports email codes right now.",
         );
       }
     } else {
-      console.error("Sign-in attempt not complete:", signIn);
-      setStatusMessage("Sign-in could not be completed. Check the logs for more details.");
+      setStatusMessage("Sign-in could not be completed. Please try again.");
     }
   };
 
@@ -77,19 +72,16 @@ export default function Page() {
     if (signIn.status === "complete") {
       await signIn.finalize({
         navigate: ({ session, decorateUrl }) => {
-          if (session?.currentTask) {
-            console.log(session.currentTask);
-            return;
-          }
-
+          if (session?.currentTask) return;
           pushDecoratedUrl(router, decorateUrl, "/");
         },
       });
     } else {
-      console.error("Sign-in attempt not complete:", signIn);
       setStatusMessage("That code did not complete sign-in. Please try again.");
     }
   };
+
+  const styles = makeStyles();
 
   if (requiresEmailCode) {
     return (
@@ -100,7 +92,7 @@ export default function Page() {
           style={styles.input}
           value={code}
           placeholder="Enter your verification code"
-          placeholderTextColor="#666666"
+          placeholderTextColor={C.inkMuted}
           onChangeText={(value) => setCode(value)}
           keyboardType="numeric"
         />
@@ -128,31 +120,43 @@ export default function Page() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign in</Text>
+      <View style={styles.brandRow}>
+        <View style={styles.logoMark}>
+          <Text style={styles.logoMarkText}>K</Text>
+        </View>
+        <Text style={styles.brandName}>kairos</Text>
+      </View>
+
+      <Text style={styles.title}>Welcome back</Text>
+      <Text style={styles.subtitle}>Sign in to see your team's day.</Text>
+
       {statusMessage && <Text style={styles.helper}>{statusMessage}</Text>}
+
       <Text style={styles.label}>Email address</Text>
       <TextInput
         style={styles.input}
         autoCapitalize="none"
         value={emailAddress}
-        placeholder="Enter email"
-        placeholderTextColor="#666666"
+        placeholder="you@fieldnote.studio"
+        placeholderTextColor={C.inkMuted}
         onChangeText={(value) => setEmailAddress(value)}
         keyboardType="email-address"
       />
       {errors.fields.identifier && (
         <Text style={styles.error}>{errors.fields.identifier.message}</Text>
       )}
+
       <Text style={styles.label}>Password</Text>
       <TextInput
         style={styles.input}
         value={password}
-        placeholder="Enter password"
-        placeholderTextColor="#666666"
-        secureTextEntry={true}
+        placeholder="Your password"
+        placeholderTextColor={C.inkMuted}
+        secureTextEntry
         onChangeText={(value) => setPassword(value)}
       />
       {errors.fields.password && <Text style={styles.error}>{errors.fields.password.message}</Text>}
+
       <Pressable
         style={({ pressed }) => [
           styles.button,
@@ -164,85 +168,72 @@ export default function Page() {
       >
         <Text style={styles.buttonText}>Sign in</Text>
       </Pressable>
+
       <View style={styles.linkContainer}>
-        <Text>Don't have an account? </Text>
+        <Text style={styles.linkPrompt}>New here? </Text>
         <Link href="/sign-up">
-          <Text style={styles.linkText}>Sign up</Text>
+          <Text style={styles.linkText}>Create an account</Text>
         </Link>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    gap: 12,
-  },
-  title: {
-    marginBottom: 8,
-    fontSize: 24,
-    fontWeight: "700",
-  },
-  label: {
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: "#fff",
-  },
-  button: {
-    backgroundColor: "#0a7ea4",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonPressed: {
-    opacity: 0.7,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  secondaryButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: "#0a7ea4",
-    fontWeight: "600",
-  },
-  linkContainer: {
-    flexDirection: "row",
-    gap: 4,
-    marginTop: 12,
-    alignItems: "center",
-  },
-  linkText: {
-    color: "#0a7ea4",
-    fontWeight: "600",
-  },
-  error: {
-    color: "#d32f2f",
-    fontSize: 12,
-    marginTop: -8,
-  },
-  helper: {
-    color: "#555555",
-    fontSize: 13,
-  },
-});
+function makeStyles() {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 24,
+      gap: 12,
+      justifyContent: "center",
+      backgroundColor: C.paper,
+    },
+    brandRow: { flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 28 },
+    logoMark: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: C.ember,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    logoMarkText: { color: "#fff", fontSize: 13, fontWeight: "700", fontFamily: SERIF },
+    brandName: { fontFamily: SERIF, fontWeight: "600", fontSize: 20, color: C.ink },
+    title: { fontFamily: SERIF, fontWeight: "600", fontSize: 28, color: C.ink, marginBottom: 4 },
+    subtitle: { fontSize: 14, color: C.inkMuted, marginBottom: 24 },
+    label: { fontWeight: "600", fontSize: 12, color: C.inkBody, marginBottom: 6 },
+    input: {
+      borderWidth: 1,
+      borderColor: C.lineStrong,
+      borderRadius: 11,
+      padding: 13,
+      fontSize: 15,
+      backgroundColor: C.card,
+      color: C.ink,
+      marginBottom: 16,
+    },
+    button: {
+      backgroundColor: C.ember,
+      paddingVertical: 14,
+      paddingHorizontal: 24,
+      borderRadius: 11,
+      alignItems: "center",
+      marginTop: 8,
+    },
+    buttonPressed: { transform: [{ scale: 0.98 }], backgroundColor: C.emberDeep },
+    buttonDisabled: { opacity: 0.5 },
+    buttonText: { color: "#fff", fontWeight: "600", fontSize: 15 },
+    secondaryButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      alignItems: "center",
+      marginTop: 8,
+    },
+    secondaryButtonText: { color: C.ember, fontWeight: "600", fontSize: 14 },
+    linkContainer: { flexDirection: "row", gap: 4, marginTop: 20, justifyContent: "center" },
+    linkPrompt: { color: C.inkMuted, fontSize: 13.5 },
+    linkText: { color: C.ember, fontWeight: "600", fontSize: 13.5 },
+    error: { color: C.stBusy, fontSize: 12, marginTop: -8 },
+    helper: { color: C.inkBody, fontSize: 13, marginBottom: 8 },
+  });
+}

@@ -2,6 +2,7 @@ import { useAuth, useSignUp } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { C } from "@/lib/theme";
 
 function pushDecoratedUrl(
   router: ReturnType<typeof useRouter>,
@@ -81,7 +82,7 @@ export default function Page() {
           style={styles.input}
           value={code}
           placeholder="Enter your verification code"
-          placeholderTextColor="#666666"
+          placeholderTextColor={C.inkMuted}
           onChangeText={(value) => setCode(value)}
           keyboardType="numeric"
         />
@@ -117,7 +118,7 @@ export default function Page() {
         autoCapitalize="none"
         value={emailAddress}
         placeholder="Enter email"
-        placeholderTextColor="#666666"
+        placeholderTextColor={C.inkMuted}
         onChangeText={(value) => setEmailAddress(value)}
         keyboardType="email-address"
       />
@@ -129,7 +130,7 @@ export default function Page() {
         style={styles.input}
         value={password}
         placeholder="Enter password"
-        placeholderTextColor="#666666"
+        placeholderTextColor={C.inkMuted}
         secureTextEntry={true}
         onChangeText={(value) => setPassword(value)}
       />
@@ -173,14 +174,14 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: C.lineStrong,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: "#fff",
+    backgroundColor: C.card,
   },
   button: {
-    backgroundColor: "#0a7ea4",
+    backgroundColor: C.ember,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   secondaryButtonText: {
-    color: "#0a7ea4",
+    color: C.ember,
     fontWeight: "600",
   },
   linkContainer: {
@@ -215,16 +216,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   linkText: {
-    color: "#0a7ea4",
+    color: C.ember,
     fontWeight: "600",
   },
   error: {
-    color: "#d32f2f",
+    color: C.stBusy,
     fontSize: 12,
     marginTop: -8,
   },
   helper: {
-    color: "#555555",
+    color: C.inkBody,
     fontSize: 13,
   },
 });

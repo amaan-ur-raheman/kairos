@@ -9,8 +9,8 @@ import { HeroUINativeProvider } from "heroui-native";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { Uniwind } from "uniwind";
 
-import { AppThemeProvider } from "@/contexts/app-theme-context";
 import { setClerkAuthTokenGetter } from "@/utils/clerk-auth";
 import { queryClient } from "@/utils/orpc";
 
@@ -22,6 +22,7 @@ function ClerkApiAuthBridge() {
   const { getToken } = useAuth();
 
   useEffect(() => {
+    Uniwind.setTheme("light"); // Ember is a light-only theme
     setClerkAuthTokenGetter(getToken);
 
     return () => {
@@ -37,7 +38,6 @@ function StackLayout() {
     <Stack screenOptions={{}}>
       <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ title: "Modal", presentation: "modal" }} />
     </Stack>
   );
 }
@@ -47,13 +47,11 @@ export default function Layout() {
     <ClerkProvider tokenCache={tokenCache} publishableKey={env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}>
       <ClerkApiAuthBridge />
       <QueryClientProvider client={queryClient}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#faf7f2" }}>
           <KeyboardProvider>
-            <AppThemeProvider>
-              <HeroUINativeProvider>
-                <StackLayout />
-              </HeroUINativeProvider>
-            </AppThemeProvider>
+            <HeroUINativeProvider>
+              <StackLayout />
+            </HeroUINativeProvider>
           </KeyboardProvider>
         </GestureHandlerRootView>
       </QueryClientProvider>
