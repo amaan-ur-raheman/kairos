@@ -13,5 +13,6 @@ Mobile mirror of the web app: calendar week view, team list/detail, status setti
 - `lib/theme.ts` — shared color/typography constants (`C`, `SERIF`, `STATUS_META`) mirroring the web design tokens.
 
 ## Gotchas
-- Date/status logic is duplicated from web on purpose for now (no shared RN-safe package yet); keep the two in sync when changing recurrence or status behavior.
+- Status labels/order and date helpers come from `@kairos/shared` — do not re-copy them here. Recurrence expansion uses the pure lib from `@kairos/api/lib/recurrence` (same module the web calendar imports).
+- Colors remain local (`lib/theme.ts`) because web uses CSS variables; keep hex values in `STATUS_COLORS` in sync with `apps/web/src/index.css`.
 - Requires `EXPO_PUBLIC_SERVER_URL` and `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in `.env`.
