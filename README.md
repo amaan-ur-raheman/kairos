@@ -28,16 +28,34 @@ bun install
 
 ## Database Setup
 
-This project uses PostgreSQL with Drizzle ORM.
+This project uses PostgreSQL (Neon) with Drizzle ORM and **versioned migrations**.
 
 1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
+2. Update your `apps/server/.env` file with your connection details.
 
-3. Apply the schema to your database:
+3. Apply migrations to the database:
 
 ```bash
-bun run db:push
+bun run db:migrate
 ```
+
+### Schema changes — always via migrations, never `db:push`
+
+`db:push` bypasses migration history and causes drift (it was the reason this repo had to re-baseline once already). The workflow for any schema change:
+
+```bash
+bun run db:generate   # diff schema → SQL migration in packages/db/src/migrations
+# review the generated .sql file, then commit it with your code change
+bun run db:migrate    # apply pending migrations locally
+```
+
+Deploys/environments should run `db:migrate` on release; every schema change must land as a reviewed migration file so it can be rolled back or replayed.
+
+> Note: databases previously managed with `db:push` already have the tables but no migration history. Mark the baseline as applied there (insert a row into drizzle's `__drizzle_migrations`) or recreate the database from scratch before running `db:migrate`.
+
+### Backups (Neon)
+
+Point-in-time restore is enabled per-branch in the Neon console. Keep at least the production branch on a paid plan with PITR; create a protected branch (`production/main`) so history cannot be accidentally deleted.
 
 ## Clerk Authentication Setup
 
@@ -125,9 +143,8 @@ kairos/
 - `bun run dev:server`: Start only the server
 - `bun run check-types`: Check TypeScript types across all apps
 - `bun run dev:native`: Start the React Native/Expo development server
-- `bun run db:push`: Push schema changes to database
-- `bun run db:generate`: Generate database client/types
-- `bun run db:migrate`: Run database migrations
+- `bun run db:generate`: Generate a SQL migration from schema changes
+- `bun run db:migrate`: Apply pending database migrations
 - `bun run db:studio`: Open database studio UI
 - `bun run deploy:setup`: Link this repo to a Vercel project (first-time setup)
 - `bun run dev:vercel`: Run the Vercel Services dev environment locally
