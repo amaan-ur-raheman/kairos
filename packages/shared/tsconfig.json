@@ -1,0 +1,5 @@
+{
+  "extends": "@kairos/config/tsconfig.base",
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

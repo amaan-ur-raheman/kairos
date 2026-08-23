@@ -4,7 +4,7 @@ import { Spinner } from "heroui-native";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import { Container } from "@/components/container";
-import { C, SERIF, STATUS_META, STATUS_ORDER } from "@/lib/theme";
+import { C, SERIF, STATUS_ORDER, statusMeta } from "@/lib/theme";
 import { orpc } from "@/utils/orpc";
 
 function initials(name: string) {
@@ -223,7 +223,7 @@ export default function TeamScreen() {
                   </Text>
                 </View>
                 {rest.map((m) => {
-                  const st = STATUS_META[statusMap.get(m.id)?.status ?? "offline"];
+                  const st = statusMeta(statusMap.get(m.id)?.status);
                   const note = statusMap.get(m.id)?.note ?? null;
                   return (
                     <Link

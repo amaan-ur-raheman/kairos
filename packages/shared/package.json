@@ -1,0 +1,18 @@
+{
+  "name": "@kairos/shared",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {
+    "@kairos/config": "workspace:*",
+    "typescript": "^6.0.3"
+  }
+}
