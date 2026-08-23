@@ -16,3 +16,4 @@ Thin HTTP shell: CORS, rate limiting, Clerk auth context, and two handler mounts
 ## Gotchas
 - `createContext` (from `@kairos/api/context`) runs per request, verifies the Clerk JWT, and lazily syncs the user/org into local DB rows. Any throw there becomes a 401 downstream by design.
 - Local dev listens on :3000; under Vercel the app export is used without `app.listen`.
+- The Vercel deployment artifact IS this package's tsdown bundle (`dist/index.mjs`, all npm deps inlined). It requires the project env var `VERCEL_ENABLE_EXPERIMENTAL_BUILD_MODE=1` — without it Vercel's elysia builder materializes an empty function that crashes at cold start with `ResolveMessage {}`.

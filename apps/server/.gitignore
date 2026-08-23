@@ -2,6 +2,8 @@
 dist/
 /build
 /out/
+.vercel-output/
+functions/
 
 # dev
 .yarn/
