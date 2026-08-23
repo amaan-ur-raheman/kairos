@@ -10,7 +10,7 @@ Thin HTTP shell: CORS, rate limiting, Clerk auth context, and two handler mounts
   - `/rpc*` → oRPC RPC handler (what web/native clients call)
   - `/api-reference*` → OpenAPI reference UI
   - `/` → health check ("OK")
-- Rate limiting: in-memory sliding window (120 req/min/IP) applied to `/rpc*`. Per-isolate only on serverless — see the `ponytail:` comment for the upgrade path.
+- Rate limiting: sliding window (120 req/min/IP) applied to `/rpc*`, implemented in `src/rate-limit.ts`. With `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` set it is a global cap via Upstash Redis; without them it falls back to an in-memory per-isolate window that only damps bursts. Redis errors fail open.
 - On Vercel, `vercel.json` rewrites `/api/*` from the web service to this service and strips the prefix; auth routes (`/auth/*`) are excluded so Clerk handles them.
 
 ## Gotchas
