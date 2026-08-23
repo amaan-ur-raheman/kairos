@@ -11,6 +11,20 @@ const clerkClient = createClerkClient({
   publishableKey: env.CLERK_PUBLISHABLE_KEY,
 });
 
+/**
+ * Accepted token audiences (`azp`): the configured CORS origin plus any extra
+ * origins from `CLERK_AUTHORIZED_PARTIES` (comma-separated). Extra parties are
+ * needed when native clients or multiple deployments mint tokens with a
+ * different `azp` than the API's own CORS origin.
+ */
+function authorizedParties(): string[] {
+  const extra = (env.CLERK_AUTHORIZED_PARTIES ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return [env.CORS_ORIGIN, ...extra];
+}
+
 export type ClerkContextAuth = {
   userId: string;
   organizationId: string | null;
@@ -26,13 +40,54 @@ export type CreateContextOptions = {
   context: ElysiaContext;
 };
 
+/**
+ * Maps a Clerk org role to the local members.role.
+ * `org:admin` → owner; `org:manager` → manager; everything else → member.
+ */
+function roleForClerkRole(orgRole: string | null): "owner" | "manager" | "member" {
+  if (orgRole === "org:admin") return "owner";
+  if (orgRole === "org:manager") return "manager";
+  return "member";
+}
+
+/** Short-lived in-process cache so warm serverless isolates skip repeated lookups. */
+const MEMBERSHIP_CACHE_TTL_MS = 60_000;
+const membershipCache = new Map<string, { id: string; role: string | null; at: number }>();
+
+/** Test hook: clears the in-process membership cache. */
+export function clearMembershipCacheForTests() {
+  membershipCache.clear();
+}
+
 async function ensureLocalMembership(userId: string, orgId: string, orgRole: string | null) {
+  const cacheKey = `${userId}:${orgId}`;
+  const cached = membershipCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < MEMBERSHIP_CACHE_TTL_MS) {
+    return { id: cached.id, role: cached.role };
+  }
+
   const existing = await db
     .select({ id: members.id, role: members.role })
     .from(members)
     .where(and(eq(members.clerkUserId, userId), eq(members.organizationId, orgId)))
     .limit(1);
-  if (existing[0]) return existing[0];
+
+  const clerkDerived = roleForClerkRole(orgRole);
+  if (existing[0]) {
+    // Propagate Clerk-derived roles only upward (admin→owner, manager) and never
+    // downgrade — managers can still be granted locally via the DB without a
+    // matching Clerk custom role.
+    if (
+      clerkDerived !== "member" &&
+      existing[0].role !== clerkDerived &&
+      !(clerkDerived === "manager" && existing[0].role === "owner")
+    ) {
+      await db.update(members).set({ role: clerkDerived }).where(eq(members.id, existing[0].id));
+      existing[0].role = clerkDerived;
+    }
+    membershipCache.set(cacheKey, { ...existing[0], at: Date.now() });
+    return existing[0];
+  }
 
   const [clerkUser, clerkOrganization] = await Promise.all([
     clerkClient.users.getUser(userId),
@@ -46,9 +101,7 @@ async function ensureLocalMembership(userId: string, orgId: string, orgRole: str
     clerkUser.username ||
     primaryEmail ||
     userId;
-  // Clerk org roles other than admin map to plain "member"; custom Clerk roles are
-  // intentionally ignored — promote people via the local members.role column.
-  const role = orgRole === "org:admin" ? "owner" : "member";
+  const role = clerkDerived;
 
   await db
     .insert(organizations)
@@ -75,15 +128,29 @@ async function ensureLocalMembership(userId: string, orgId: string, orgRole: str
     .from(members)
     .where(and(eq(members.clerkUserId, userId), eq(members.organizationId, orgId)))
     .limit(1);
+  if (synced[0]) {
+    membershipCache.set(cacheKey, { ...synced[0], at: Date.now() });
+  }
   return synced[0] ?? null;
 }
 
 export async function createContext({ context }: CreateContextOptions): Promise<RequestContext> {
+  type AuthRequestState = Awaited<ReturnType<typeof clerkClient.authenticateRequest>>;
+  let requestState: AuthRequestState;
   try {
-    const requestState = await clerkClient.authenticateRequest(context.request, {
-      authorizedParties: [env.CORS_ORIGIN],
+    requestState = await clerkClient.authenticateRequest(context.request, {
+      authorizedParties: authorizedParties(),
     });
+  } catch (err) {
+    // Distinguish token rejection from infrastructure failure for diagnosability
+    console.warn(
+      "[auth] Clerk rejected request:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return { auth: null };
+  }
 
+  try {
     const auth = requestState.toAuth();
     if (!auth?.isAuthenticated || !("userId" in auth) || typeof auth.userId !== "string") {
       return { auth: null };
