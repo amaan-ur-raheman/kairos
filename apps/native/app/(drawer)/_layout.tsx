@@ -1,87 +1,68 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Link } from "expo-router";
 import { Drawer } from "expo-router/drawer";
-import { useThemeColor } from "heroui-native";
-import React, { useCallback } from "react";
-import { Pressable, Text } from "react-native";
+import { useCallback } from "react";
+import { Text } from "react-native";
 
-import { ThemeToggle } from "@/components/theme-toggle";
+import { OrgGate } from "@/components/org-gate";
+import { C, SERIF } from "@/lib/theme";
 
 function DrawerLayout() {
-  const themeColorForeground = useThemeColor("foreground");
-  const themeColorBackground = useThemeColor("background");
-
-  const renderThemeToggle = useCallback(() => <ThemeToggle />, []);
+  const renderLogo = useCallback(
+    () => (
+      <Text style={{ fontFamily: SERIF, fontWeight: "600", fontSize: 17, color: C.ink }}>
+        kairos
+      </Text>
+    ),
+    [],
+  );
 
   return (
-    <Drawer
-      screenOptions={{
-        headerTintColor: themeColorForeground,
-        headerStyle: { backgroundColor: themeColorBackground },
-        headerTitleStyle: {
-          fontWeight: "600",
-          color: themeColorForeground,
-        },
-        headerRight: renderThemeToggle,
-        drawerStyle: { backgroundColor: themeColorBackground },
-      }}
-    >
-      <Drawer.Screen
-        name="index"
-        options={{
-          headerTitle: "Home",
-          drawerLabel: ({ color, focused }) => (
-            <Text style={{ color: focused ? color : themeColorForeground }}>Home</Text>
-          ),
-          drawerIcon: ({ size, color, focused }) => (
-            <Ionicons
-              name="home-outline"
-              size={size}
-              color={focused ? color : themeColorForeground}
-            />
-          ),
+    <OrgGate>
+      <Drawer
+        screenOptions={{
+          headerTintColor: C.ink,
+          headerStyle: { backgroundColor: C.card },
+          headerTitleStyle: { fontFamily: SERIF, fontWeight: "600", fontSize: 17, color: C.ink },
+          drawerStyle: { backgroundColor: C.paper },
+          drawerActiveTintColor: C.ember,
+          drawerInactiveTintColor: C.inkMuted,
+          drawerActiveBackgroundColor: C.emberSoft,
         }}
-      />
-      <Drawer.Screen
-        name="(tabs)"
-        options={{
-          headerTitle: "Tabs",
-          drawerLabel: ({ color, focused }) => (
-            <Text style={{ color: focused ? color : themeColorForeground }}>Tabs</Text>
-          ),
-          drawerIcon: ({ size, color, focused }) => (
-            <MaterialIcons
-              name="border-bottom"
-              size={size}
-              color={focused ? color : themeColorForeground}
-            />
-          ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable className="mr-4">
-                <Ionicons name="add-outline" size={24} color={themeColorForeground} />
-              </Pressable>
-            </Link>
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="todos"
-        options={{
-          headerTitle: "Todos",
-          drawerLabel: ({ color, focused }) => (
-            <Text style={{ color: focused ? color : themeColorForeground }}>Todos</Text>
-          ),
-          drawerIcon: ({ size, color, focused }) => (
-            <Ionicons
-              name="checkbox-outline"
-              size={size}
-              color={focused ? color : themeColorForeground}
-            />
-          ),
-        }}
-      />
-    </Drawer>
+      >
+        <Drawer.Screen
+          name="index"
+          options={{
+            headerTitle: "Kairos",
+            headerRight: renderLogo,
+            drawerLabel: ({ color }) => <Text style={{ color }}>Calendar</Text>,
+            drawerIcon: ({ size, color }) => (
+              <Ionicons name="calendar-outline" size={size} color={color} />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="team"
+          options={{
+            headerTitle: "Kairos",
+            headerRight: renderLogo,
+            drawerLabel: ({ color }) => <Text style={{ color }}>Team</Text>,
+            drawerIcon: ({ size, color }) => (
+              <MaterialIcons name="people-outline" size={size} color={color} />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="settings"
+          options={{
+            headerTitle: "Settings",
+            drawerLabel: ({ color }) => <Text style={{ color }}>Settings</Text>,
+            drawerIcon: ({ size, color }) => (
+              <Ionicons name="settings-outline" size={size} color={color} />
+            ),
+          }}
+        />
+      </Drawer>
+    </OrgGate>
   );
 }
 

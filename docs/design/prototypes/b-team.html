@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Paper — Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --canvas:#fff; --surface-soft:#f8f9fa; --surface-card:#f4f4f5;
+    --hairline:#e6e7ea; --ink:#17181a; --ink-body:#3f4247; --ink-muted:#8b8e95;
+    --cta:#111; --mono:'JetBrains Mono',monospace; --display:'Inter Tight','Inter',sans-serif;
+    --st-available:#16a34a; --st-busy:#dc2626; --st-meeting:#d97706;
+    --st-focus:#2563eb; --st-traveling:#7c3aed; --st-offline:#71767f;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:var(--canvas); color:var(--ink); font-size:14px; line-height:1.5; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  .topbar { height:56px; flex-shrink:0; display:flex; align-items:center; gap:22px; padding:0 24px; border-bottom:1px solid var(--hairline); }
+  .logo { display:flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:15px; letter-spacing:-0.02em; }
+  .logo-mark { width:22px;height:22px;border-radius:7px;background:var(--cta);display:grid;place-items:center;color:#fff;font-size:10px;font-weight:600; }
+  nav.mainnav a { text-decoration:none; color:var(--ink-muted); font-size:13.5px; font-weight:500; padding:6px 12px; border-radius:8px; }
+  nav.mainnav a:hover, nav.mainnav a.active { color:var(--ink); background:var(--surface-card); }
+  nav.mainnav { display:flex; gap:2px; }
+
+  .content-wrap { flex:1; overflow:auto; }
+  .page { max-width:880px; margin:0 auto; padding:32px 24px 64px; }
+  h1 { font-family:var(--display); font-size:26px; font-weight:600; letter-spacing:-0.02em; }
+  .sub { color:var(--ink-muted); font-size:14px; margin-top:2px; }
+
+  /* summary strip — plain layout, no card boxes (density discipline) */
+  .summary { display:flex; align-items:baseline; gap:28px; padding:20px 0 22px; }
+  .summary .big { font-family:var(--display); font-size:34px; font-weight:600; letter-spacing:-0.03em; }
+  .summary .big small { font-family:'Inter'; font-size:13px; font-weight:500; color:var(--ink-muted); letter-spacing:0; margin-left:6px; }
+  .green { color:var(--st-available); }
+
+  .search {
+    display:flex; align-items:center; gap:8px;
+    border:1px solid var(--hairline); border-radius:10px;
+    padding:8px 12px; margin-bottom:14px; color:var(--ink-muted);
+  }
+  .search input { border:none; outline:none; font:inherit; font-size:13.5px; flex:1; color:var(--ink); background:transparent; }
+  kbd { font-family:var(--mono); font-size:10.5px; color:var(--ink-muted); border:1px solid var(--hairline); border-radius:5px; padding:1px 6px; background:var(--surface-soft); }
+
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    text-align:left; font-size:11.5px; font-weight:600; color:var(--ink-muted);
+    text-transform:uppercase; letter-spacing:.06em; padding:8px 12px; border-bottom:1px solid var(--hairline);
+  }
+  tbody td { padding:12px; border-bottom:1px solid var(--hairline); vertical-align:middle; }
+  tbody tr:last-child td { border-bottom:0; }
+  tbody tr { cursor:pointer; transition:background .1s; }
+  tbody tr:hover { background:var(--surface-soft); }
+
+  .cell-person { display:flex; align-items:center; gap:12px; min-width:220px; }
+  .avatar { position:relative; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:12px; font-weight:600; flex-shrink:0; }
+  .st-dot { position:absolute; bottom:0; right:0; width:11px; height:11px; border-radius:50%; border:2px solid #fff; }
+  .p-name { font-weight:600; font-size:13.5px; }
+  .p-role { font-size:12.5px; color:var(--ink-muted); }
+  .status-pill { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:500; }
+  .status-pill i { width:8px; height:8px; border-radius:50%; }
+  .note-cell { font-size:12.5px; color:var(--ink-muted); font-style:italic; }
+  .tz-cell { font-family:var(--mono); font-size:11.5px; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><div class="logo-mark">K</div>kairos</div>
+  <nav class="mainnav">
+    <a href="b-calendar.html">Calendar</a>
+    <a href="#" class="active">Team</a>
+    <a href="b-settings.html">Settings</a>
+  </nav>
+</header>
+
+<div class="content-wrap">
+  <div class="page">
+    <h1>Team</h1>
+    <p class="sub">Everyone's live status at Acme Inc.</p>
+
+    <!-- data breathes in plain layout, not boxes -->
+    <div class="summary">
+      <span class="big green">4<small>available now</small></span>
+      <span class="big">8<small>members</small></span>
+      <span class="big">2<small>focused / meeting</small></span>
+      <span class="big">2<small>away</small></span>
+    </div>
+
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input placeholder="Search people…"><kbd>⌘K</kbd>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Member</th><th>Status</th><th>Note</th><th>Local time</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="cell-person"><div class="avatar" style="background:#3e63dd">AK<span class="st-dot" style="background:var(--st-available)"></span></div><div><div class="p-name">Amaan Khan</div><div class="p-role">Backend Engineer</div></div></div></td>
+          <td><span class="status-pill"><i style="background:var(--st-available)"></i>Available</span></td>
+          <td></td>
+          <td class="tz-cell">1:37 PM · UTC+4</td>
+        </tr>
+        <tr>
+          <td><div class="cell-person"><div class="avatar" style="background:#8e4ec6">MR<span class="st-dot" style="background:var(--st-focus)"></span></div><div><div class="p-name">Maria Ruiz</div><div class="p-role">Product Designer</div></div></div></td>
+          <td><span class="status-pill"><i style="background:var(--st-focus)"></i>Focus Time</span></td>
+          <td class="note-cell">until 11:00 AM</td>
+          <td class="tz-cell">9:37 AM · UTC+1</td>
+        </tr>
+        <tr>
+          <td><div class="cell-person"><div class="avatar" style="background:#3070b6">JO<span class="st-dot" style="background:var(--st-meeting)"></span></div><div><div class="p-name">James Okafor</div><div class="p-role">Frontend Engineer</div></div></div></td>
+          <td><span class="status-pill"><i style="background:var(--st-meeting)"></i>In Meeting</span></td>
+          <td></td>
+          <td class="tz-cell">9:37 AM · UTC+0</td>
+        </tr>
+        <tr>
+          <td><div class="cell-person"><div class="avatar" style="background:#0f8a80">PS<span class="st-dot" style="background:var(--st-busy)"></span></div><div><div class="p-name">Priya Sharma</div><div class="p-role">Engineering Manager</div></div></div></td>
+          <td><span class="status-pill"><i style="background:var(--st-busy)"></i>Busy</span></td>
+          <td></td>
+          <td class="tz-cell">3:07 PM · UTC+5.5</td>
+        </tr>
+        <tr>
+          <td><div class="cell-person"><div class="avatar" style="background:#b1601f">TL<span class="st-dot" style="background:var(--st-available)"></span></div><div><div class="p-name">Tomás Lima</div><div class="p-role">Data Engineer</div></div></div></td>
+          <td><span class="status-pill"><i style="background:var(--st-available)"></i>Available</span></td>
+          <td class="note-cell">at the dentist till noon</td>
+          <td class="tz-cell">10:37 AM · UTC−3</td>
+        </tr>
+        <tr>
+          <td><div class="cell-person"><div class="avatar" style="background:#7048a8">EC<span class="st-dot" style="background:var(--st-traveling)"></span></div><div><div class="p-name">Elena Costa</div><div class="p-role">QA Engineer</div></div></div></td>
+          <td><span class="status-pill"><i style="background:var(--st-traveling)"></i>Traveling</span></td>
+          <td></td>
+          <td class="tz-cell">11:37 AM · UTC+2</td>
+        </tr>
+        <tr>
+          <td><div class="cell-person"><div class="avatar" style="background:#5a6472">DN<span class="st-dot" style="background:var(--st-offline)"></span></div><div><div class="p-name">Dan Nilsson</div><div class="p-role">DevOps</div></div></div></td>
+          <td><span class="status-pill"><i style="background:var(--st-offline)"></i>Offline</span></td>
+          <td class="note-cell">on leave until Feb 17</td>
+          <td class="tz-cell">10:37 AM · UTC+1</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

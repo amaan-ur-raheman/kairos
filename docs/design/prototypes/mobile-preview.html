@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos Mobile — Ember screens preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#faf7f2; --paper-deep:#f3efe6; --card:#fffdf9;
+    --line:#e8e2d6; --line-strong:#d8d0c0;
+    --ink:#2b2620; --ink-body:#57503f; --ink-muted:#6f6754;
+    --ember:#c2410c; --ember-deep:#9a3412; --ember-soft:#fbe9dd;
+    --st-av:#3f9142; --st-busy:#c93c37; --st-meet:#b98212; --st-focus:#3b6fb5; --st-trav:#7d55b5; --st-off:#8a8271;
+    --serif:'Source Serif 4',Georgia,serif; --mono:'JetBrains Mono',monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#211d18; padding:34px 26px 60px; }
+  .board-title { color:#d9c9b8; font-family:var(--serif); font-size:22px; font-weight:600; margin-bottom:4px; }
+  .board-sub { color:#8a8271; font-size:12.5px; margin-bottom:28px; }
+  .board { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+
+  /* ── device frame ── */
+  .phone {
+    width:320px; height:660px; border-radius:38px; overflow:hidden;
+    background:var(--paper); border:6px solid #3a332c; position:relative;
+    display:flex; flex-direction:column; flex-shrink:0;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .statusbar {
+    flex-shrink:0; height:34px; display:flex; justify-content:space-between; align-items:center;
+    padding:0 20px; font-family:var(--mono); font-size:10px; color:var(--ink); background:var(--card);
+  }
+  .statusbar.on-ember { background:transparent; color:#fff7ef; position:absolute; top:0; left:0; right:0; z-index:5; }
+  .screen-head {
+    flex-shrink:0; height:48px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 16px; background:var(--card); border-bottom:1px solid var(--line);
+  }
+  .screen-title { font-family:var(--serif); font-size:16px; font-weight:600; color:var(--ink); }
+  .screen-body { flex:1; overflow:hidden; position:relative; }
+  .scrollfade { position:absolute; bottom:0; left:0; right:0; height:36px;
+    background:linear-gradient(transparent, var(--paper)); pointer-events:none; }
+
+  .kicker { font-family:var(--mono); font-size:8.5px; text-transform:uppercase; letter-spacing:.16em; color:var(--ember); }
+  .serif { font-family:var(--serif); }
+
+  .drawer { position:absolute; left:0; top:0; bottom:0; width:190px; background:var(--paper);
+    border-right:1px solid var(--line); padding:14px 10px; z-index:4; }
+  .drawer .brand { display:flex; align-items:center; gap:8px; padding:4px 8px 14px; }
+  .drawer .mark { width:22px;height:22px;border-radius:50%;background:var(--ember);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700;font-family:var(--sans); }
+  .drawer .brand span { font-family:var(--serif); font-weight:600; font-size:15px; color:var(--ink); }
+  .drawer a { display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:8px; font-size:12.5px; font-weight:500; color:var(--ink-muted); margin-bottom:2px; }
+  .drawer a.on { background:var(--ember-soft); color:var(--ember-deep); }
+  .drawer .ic { width:14px; height:14px; border:1.5px solid currentColor; border-radius:3px; opacity:.7; }
+
+  /* generic bits */
+  .dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .chip-mono { font-family:var(--mono); }
+  .avatar { border-radius:50%; background:var(--ember); color:#fff; display:grid; place-items:center; font-family:var(--serif); font-weight:600; }
+</style>
+</head>
+<body>
+
+<div class="board-title">Kairos mobile — Ember screens</div>
+<div class="board-sub">Static preview of the native app (drawer: Calendar · Team · Settings). Same tokens as the web build.</div>
+
+<div class="board">
+
+  <!-- ══════════ 1. SIGN IN ══════════ -->
+  <div class="phone">
+    <div class="statusbar on-ember"><span>9:41</span><span>●●●</span></div>
+    <div style="flex:1; background:linear-gradient(165deg,var(--ember) 0%,var(--ember-deep) 58%,#7c2d12 100%); color:#fff7ef; padding:52px 24px; display:flex; flex-direction:column;">
+      <div style="display:flex; align-items:center; gap:9px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#fff7ef;color:var(--ember);display:grid;place-items:center;font-size:12px;font-weight:700;">K</div>
+        <span class="serif" style="font-weight:600;font-size:18px;">kairos</span>
+      </div>
+      <div style="margin:auto 0;">
+        <div class="serif" style="font-size:26px;font-weight:600;line-height:1.15;">Your team's schedule, <span style="color:#ffd9bd;">at a glance.</span></div>
+        <div class="serif" style="font-style:italic;font-size:13.5px;margin-top:14px;color:#ffefe3;line-height:1.55;">See who's free, who's focused, and who's out, before you have to ask.</div>
+      </div>
+      <div style="display:flex;gap:20px;font-size:10.5px;color:#ffefe3;">
+        <span><b style="display:block;font-family:var(--serif);font-size:15px;color:#fff;">4</b>available now</span>
+        <span><b style="display:block;font-family:var(--serif);font-size:15px;color:#fff;">8</b>teammates</span>
+      </div>
+    </div>
+    <div style="padding:22px 20px; background:var(--paper);">
+      <div style="font-size:11px;font-weight:600;color:var(--ink-body);margin-bottom:5px;">Email address</div>
+      <div style="border:1px solid var(--line-strong);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--ink);background:var(--card);margin-bottom:12px;">shadow@fieldnote.studio</div>
+      <div style="font-size:11px;font-weight:600;color:var(--ink-body);margin-bottom:5px;">Password</div>
+      <div style="border:1px solid var(--line-strong);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--ink);background:var(--card);margin-bottom:16px;">••••••••</div>
+      <div style="background:var(--ember);border-radius:10px;padding:12px;text-align:center;color:#fff;font-weight:600;font-size:13.5px;">Sign in</div>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-muted);">New here? <span style="color:var(--ember);font-weight:600;">Create an account</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 2. CALENDAR ══════════ -->
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="screen-head">
+      <span class="screen-title">Calendar</span>
+      <span style="font-size:11px;color:var(--ink-muted);">4 of 8 available</span>
+    </div>
+    <div class="screen-body">
+      <div style="padding:12px 14px 6px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;">
+          <span class="serif" style="font-size:20px;font-weight:600;color:var(--ink);">Calendar</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--ink-muted);">Feb 10-16</span>
+        </div>
+      </div>
+      <div style="padding:0 12px 8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="color:var(--ink-muted);font-size:14px;">‹</span>
+          <span class="serif" style="font-style:italic;font-size:12px;color:var(--ink-muted);">Feb 10-16</span>
+          <span style="color:var(--ink-muted);font-size:14px;">›</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <div style="text-align:center;"><div class="serif" style="font-style:italic;font-size:10px;color:var(--ink-muted);">Mon</div><div style="width:26px;height:26px;line-height:26px;border-radius:50%;font-family:var(--mono);font-size:11px;color:var(--ink-muted);">10</div></div>
+          <div style="text-align:center;"><div class="serif" style="font-style:italic;font-size:10px;color:var(--ink-muted);">Tue</div><div style="width:26px;height:26px;line-height:26px;border-radius:50%;font-family:var(--mono);font-size:11px;color:var(--ink-muted);">11</div></div>
+          <div style="text-align:center;"><div class="serif" style="font-style:italic;font-size:10px;color:var(--ink-muted);">Wed</div><div style="width:26px;height:26px;line-height:26px;border-radius:50%;font-family:var(--mono);font-size:11px;color:var(--ink-muted);">12</div></div>
+          <div style="text-align:center;"><div class="serif" style="font-style:italic;font-size:10px;color:var(--ember);">Thu</div><div style="width:26px;height:26px;line-height:26px;border-radius:50%;font-family:var(--mono);font-size:11px;background:var(--ember);color:#fff;">13</div></div>
+          <div style="text-align:center;"><div class="serif" style="font-style:italic;font-size:10px;color:var(--ink-muted);">Fri</div><div style="width:26px;height:26px;line-height:26px;border-radius:50%;font-family:var(--mono);font-size:11px;color:var(--ink-muted);">14</div></div>
+          <div style="text-align:center;"><div class="serif" style="font-style:italic;font-size:10px;color:var(--ink-muted);">Sat</div><div style="width:26px;height:26px;line-height:26px;border-radius:50%;font-family:var(--mono);font-size:11px;color:var(--ink-muted);">15</div></div>
+          <div style="text-align:center;"><div class="serif" style="font-style:italic;font-size:10px;color:var(--ink-muted);">Sun</div><div style="width:26px;height:26px;line-height:26px;border-radius:50%;font-family:var(--mono);font-size:11px;color:var(--ink-muted);">16</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:10px;">
+          <span class="dot" style="width:10px;height:10px;background:var(--st-av);"></span>
+          <span style="font-size:12px;color:var(--ink-body);">Available</span>
+        </div>
+      </div>
+      <div style="display:flex; position:absolute; top:158px; bottom:0; left:0; right:0;">
+        <div style="width:38px; position:relative;">
+          <span style="position:absolute;right:6px;top:8px;font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);">7 AM</span>
+          <span style="position:absolute;right:6px;top:68px;font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);">8 AM</span>
+          <span style="position:absolute;right:6px;top:128px;font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);">9 AM</span>
+          <span style="position:absolute;right:6px;top:188px;font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);">10 AM</span>
+          <span style="position:absolute;right:6px;top:248px;font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);">11 AM</span>
+        </div>
+        <div style="flex:1; border-left:1px solid var(--line); position:relative;">
+          <div style="height:60px;border-bottom:1px solid #efeae0;"></div>
+          <div style="height:60px;border-bottom:1px solid #efeae0;"></div>
+          <div style="height:60px;border-bottom:1px solid #efeae0;"></div>
+          <div style="height:60px;border-bottom:1px solid #efeae0;"></div>
+          <div style="height:60px;border-bottom:1px solid #efeae0;"></div>
+          <div style="position:absolute;left:0;right:0;top:150px;z-index:2;">
+            <span style="position:absolute;left:-3px;top:-3px;width:7px;height:7px;border-radius:50%;background:var(--ember);"></span>
+            <span style="position:absolute;left:6px;right:0;top:0;height:1.5px;background:var(--ember);"></span>
+          </div>
+          <div style="position:absolute;left:6px;right:8px;top:10px;height:110px;border-radius:9px;border:1px solid var(--line);background:#eaf3ea;padding:7px 9px;">
+            <div style="display:flex;align-items:center;gap:5px;"><span class="dot" style="width:6px;height:6px;background:var(--st-av);"></span><span style="font-size:11px;font-weight:600;color:var(--ink);">Working hours</span></div>
+            <div style="font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);margin-top:2px;">9:00-5:00</div>
+          </div>
+          <div style="position:absolute;left:6px;right:8px;top:132px;height:52px;border-radius:9px;border:1px solid var(--line);background:var(--ember-soft);padding:7px 9px;">
+            <div style="display:flex;align-items:center;gap:5px;"><span class="dot" style="width:6px;height:6px;background:var(--ember);"></span><span style="font-size:11px;font-weight:600;color:var(--ink);">Available</span></div>
+            <div style="font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);margin-top:2px;">Heads-down until standup</div>
+          </div>
+          <div style="position:absolute;left:6px;right:8px;top:250px;height:52px;border-radius:9px;border:1px solid var(--line);background:#eef4fc;padding:7px 9px;">
+            <div style="display:flex;align-items:center;gap:5px;"><span class="dot" style="width:6px;height:6px;background:var(--st-focus);"></span><span style="font-size:11px;font-weight:600;color:var(--ink);">Design sync</span></div>
+            <div style="font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);margin-top:2px;">1:00-2:00 PM</div>
+          </div>
+        </div>
+      </div>
+      <div class="scrollfade"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. TEAM ══════════ -->
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="screen-head"><span class="screen-title">Kairos</span><span class="serif" style="font-size:14px;font-weight:600;color:var(--ink);">kairos</span></div>
+    <div class="screen-body" style="padding:14px 14px 0; overflow:hidden;">
+      <div class="kicker">THURSDAY, FEB 13</div>
+      <div class="serif" style="font-size:24px;font-weight:600;color:var(--ink);margin-top:4px;">Who's around?</div>
+      <div class="serif" style="font-size:13px;line-height:1.5;color:var(--ink-body);margin-top:6px;">
+        <b style="color:var(--st-av);font-weight:600;">4 teammates are available right now.</b> 2 are heads-down. 2 are away.
+      </div>
+
+      <div style="display:flex;align-items:baseline;gap:6px;margin:16px 0 8px;border-bottom:1px solid var(--line-strong);padding-bottom:6px;">
+        <span class="serif" style="font-size:14px;font-weight:600;color:var(--ink);">Available now</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--ink-muted);">4</span>
+      </div>
+
+      <!-- card 1 -->
+      <div style="border:1px solid var(--line);border-radius:12px;background:var(--card);padding:11px 12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="position:relative;"><div class="avatar" style="width:38px;height:38px;font-size:13px;">SM</div>
+          <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--st-av);border:2px solid var(--card);"></span></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12.5px;font-weight:600;color:var(--ink);">Shadow Monarch</div>
+          <div style="font-size:10.5px;color:var(--ink-muted);">Backend Engineer</div>
+        </div>
+        <div style="text-align:right;"><div style="font-family:var(--mono);font-size:11px;color:var(--ink);">1:37 PM</div><div style="font-size:8.5px;color:var(--ink-muted);">local</div></div>
+      </div>
+      <!-- card 2 -->
+      <div style="border:1px solid var(--line);border-radius:12px;background:var(--card);padding:11px 12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="position:relative;"><div class="avatar" style="width:38px;height:38px;font-size:13px;background:var(--st-meeting);">TL</div>
+          <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--st-av);border:2px solid var(--card);"></span></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12.5px;font-weight:600;color:var(--ink);">Tomás Lima</div>
+          <div style="font-size:10.5px;color:var(--ink-muted);">Data Engineer</div>
+          <div class="serif" style="font-style:italic;font-size:10.5px;color:var(--ink-muted);">back from the dentist at noon</div>
+        </div>
+        <div style="text-align:right;"><div style="font-family:var(--mono);font-size:11px;color:var(--ink);">10:37 AM</div><div style="font-size:8.5px;color:var(--ink-muted);">local</div></div>
+      </div>
+
+      <div style="display:flex;align-items:baseline;gap:6px;margin:14px 0 4px;border-bottom:1px solid var(--line-strong);padding-bottom:6px;">
+        <span class="serif" style="font-size:14px;font-weight:600;color:var(--ink);">Focused & away</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--ink-muted);">4</span>
+      </div>
+
+      <!-- row -->
+      <div style="padding:9px 0;border-bottom:1px solid #efeae0;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="position:relative;"><div style="width:26px;height:26px;border-radius:50%;background:var(--paper-deep);display:grid;place-items:center;font-family:var(--mono);font-size:9px;color:var(--ink);">MR</div>
+            <span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:var(--st-focus);border:2px solid var(--paper);"></span></div>
+          <div style="flex:1;"><div style="font-size:11.5px;font-weight:600;color:var(--ink);">Maria Ruiz</div><div style="font-size:9.5px;color:var(--ink-muted);">Product Designer</div></div>
+          <div style="text-align:right;"><div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;"><span class="dot" style="width:7px;height:7px;background:var(--st-focus);"></span><span style="font-size:10.5px;color:var(--ink-body);">Focus</span></div>
+          <div style="font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);">9:37 AM</div></div>
+        </div>
+        <div class="serif" style="font-style:italic;font-size:10.5px;color:var(--ink-muted);margin:3px 0 0 35px;">until 11:00 AM</div>
+      </div>
+      <div style="padding:9px 0;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="position:relative;"><div style="width:26px;height:26px;border-radius:50%;background:var(--paper-deep);display:grid;place-items:center;font-family:var(--mono);font-size:9px;color:var(--ink);">DN</div>
+            <span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:var(--st-off);border:2px solid var(--paper);"></span></div>
+          <div style="flex:1;"><div style="font-size:11.5px;font-weight:600;color:var(--ink);">Dan Nilsson</div><div style="font-size:9.5px;color:var(--ink-muted);">DevOps</div></div>
+          <div style="text-align:right;"><div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;"><span class="dot" style="width:7px;height:7px;background:var(--st-off);"></span><span style="font-size:10.5px;color:var(--ink-body);">Offline</span></div>
+          <div style="font-family:var(--mono);font-size:8.5px;color:var(--ink-muted);">10:37 AM</div></div>
+        </div>
+      </div>
+      <div class="scrollfade"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 4. SETTINGS ══════════ -->
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="screen-head"><span class="screen-title">Settings</span><span class="serif" style="font-size:14px;font-weight:600;color:var(--ink);">kairos</span></div>
+    <div class="screen-body" style="padding:14px 14px 0; overflow:hidden;">
+      <div class="kicker">SETTINGS · SHADOW MONARCH</div>
+      <div class="serif" style="font-size:22px;font-weight:600;color:var(--ink);margin-top:4px;">Your corner of Kairos</div>
+
+      <div style="border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px;display:flex;align-items:center;gap:10px;margin-top:14px;">
+        <div class="avatar" style="width:42px;height:42px;font-size:14px;">SM</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--ink);">Shadow Monarch</div>
+          <div style="font-size:10.5px;color:var(--ink-muted);">shadow@fieldnote.studio · Backend Engineer</div>
+        </div>
+        <span style="font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.1em;background:var(--ember-soft);color:var(--ember);border-radius:99px;padding:3px 9px;">owner</span>
+      </div>
+
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 8px;border-bottom:1px solid var(--line-strong);padding-bottom:7px;">
+        <span class="serif" style="font-size:15px;font-weight:600;color:var(--ink);">Status</span>
+        <span class="serif" style="font-style:italic;font-size:10.5px;color:var(--ink-muted);">shown live on the team page</span>
+      </div>
+
+      <!-- radio rows -->
+      <div style="margin:0 -10px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:var(--ember-soft);">
+          <span style="width:13px;height:13px;border-radius:50%;border:1.5px solid var(--ember);display:grid;place-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:var(--ember);"></span></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--st-av);"></span>
+          <span style="font-size:11.5px;font-weight:600;color:var(--ink);width:72px;">Available</span>
+          <span style="font-size:10px;color:var(--ink-muted);">open for chats & calls</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;">
+          <span style="width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line-strong);"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--st-busy);"></span>
+          <span style="font-size:11.5px;font-weight:500;color:var(--ink);width:72px;">Busy</span>
+          <span style="font-size:10px;color:var(--ink-muted);">do not disturb</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;">
+          <span style="width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line-strong);"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--st-meet);"></span>
+          <span style="font-size:11.5px;font-weight:500;color:var(--ink);width:72px;">In a Meeting</span>
+          <span style="font-size:10px;color:var(--ink-muted);">back after this one</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;">
+          <span style="width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line-strong);"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--st-focus);"></span>
+          <span style="font-size:11.5px;font-weight:500;color:var(--ink);width:72px;">Focus Time</span>
+          <span style="font-size:10px;color:var(--ink-muted);">heads-down, async only</span>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--line-strong);border-radius:9px;padding:9px 12px;font-size:12px;color:var(--ink);background:var(--card);margin-top:9px;">Heads-down until standup</div>
+
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:16px 0 8px;border-bottom:1px solid var(--line-strong);padding-bottom:7px;">
+        <span class="serif" style="font-size:15px;font-weight:600;color:var(--ink);">Working hours</span>
+      </div>
+      <div style="display:flex;gap:3px;">
+        <div style="flex:1;text-align:center;"><div style="height:26px;border-radius:6px;background:var(--paper-deep);"></div><div style="font-family:var(--mono);font-size:8px;color:var(--ink-muted);margin-top:3px;">S</div></div>
+        <div style="flex:1;text-align:center;"><div style="height:26px;border-radius:6px;background:var(--paper-deep);position:relative;"><span style="position:absolute;inset:2px;border-radius:4px;background:var(--ember);opacity:.85;"></span></div><div style="font-family:var(--mono);font-size:8px;color:var(--ink-muted);margin-top:3px;">M</div></div>
+        <div style="flex:1;text-align:center;"><div style="height:26px;border-radius:6px;background:var(--paper-deep);position:relative;"><span style="position:absolute;inset:2px;border-radius:4px;background:var(--ember);opacity:.85;"></span></div><div style="font-family:var(--mono);font-size:8px;color:var(--ink-muted);margin-top:3px;">T</div></div>
+        <div style="flex:1;text-align:center;"><div style="height:26px;border-radius:6px;background:var(--paper-deep);position:relative;"><span style="position:absolute;inset:2px;border-radius:4px;background:var(--ember);opacity:.85;"></span></div><div style="font-family:var(--mono);font-size:8px;color:var(--ink-muted);margin-top:3px;">W</div></div>
+        <div style="flex:1;text-align:center;"><div style="height:26px;border-radius:6px;background:var(--paper-deep);position:relative;"><span style="position:absolute;inset:2px;border-radius:4px;background:var(--ember);opacity:.85;"></span></div><div style="font-family:var(--mono);font-size:8px;color:var(--ink-muted);margin-top:3px;">T</div></div>
+        <div style="flex:1;text-align:center;"><div style="height:26px;border-radius:6px;background:var(--paper-deep);position:relative;"><span style="position:absolute;inset:2px;border-radius:4px;background:var(--ember);opacity:.85;"></span></div><div style="font-family:var(--mono);font-size:8px;color:var(--ink-muted);margin-top:3px;">F</div></div>
+        <div style="flex:1;text-align:center;"><div style="height:26px;border-radius:6px;background:var(--paper-deep);"></div><div style="font-family:var(--mono);font-size:8px;color:var(--ink-muted);margin-top:3px;">S</div></div>
+      </div>
+      <div class="scrollfade"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 5. MEMBER DETAIL ══════════ -->
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="screen-head"><span class="screen-title">Kairos</span><span style="color:var(--ember);font-size:12px;font-weight:600;">← Team</span></div>
+    <div class="screen-body" style="padding:16px 14px 0; overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="avatar" style="width:56px;height:56px;font-size:19px;">SM</div>
+        <div>
+          <div class="serif" style="font-size:21px;font-weight:600;color:var(--ink);">Shadow Monarch</div>
+          <div style="font-size:11.5px;color:var(--ink-muted);margin-top:2px;">Backend Engineer · shadow@fieldnote.studio</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:20px 0 8px;border-bottom:1px solid var(--line-strong);padding-bottom:7px;">
+        <span class="serif" style="font-size:15px;font-weight:600;color:var(--ink);">Skills</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink-body);font-size:10.5px;font-weight:500;padding:5px 12px;">PostgreSQL</span>
+        <span style="border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink-body);font-size:10.5px;font-weight:500;padding:5px 12px;">Drizzle ORM</span>
+        <span style="border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink-body);font-size:10.5px;font-weight:500;padding:5px 12px;">Bun</span>
+      </div>
+
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:20px 0 8px;border-bottom:1px solid var(--line-strong);padding-bottom:7px;">
+        <span class="serif" style="font-size:15px;font-weight:600;color:var(--ink);">Working hours</span>
+        <span style="font-family:var(--mono);font-size:8.5px;letter-spacing:2px;color:var(--ink-muted);">THEIR WEEK</span>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #efeae0;">
+          <span class="serif" style="font-style:italic;font-size:12.5px;width:34px;color:var(--ink-body);">Sun</span>
+          <span style="font-size:11.5px;color:var(--ink-muted);">Day off</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #efeae0;">
+          <span class="serif" style="font-style:italic;font-size:12.5px;width:34px;color:var(--ink-body);">Mon</span>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--ink);">09:00 to 17:00</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;">
+          <span class="serif" style="font-style:italic;font-size:12.5px;width:34px;color:var(--ink-body);">Tue</span>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--ink);">09:00 to 17:00</span>
+        </div>
+      </div>
+      <div class="scrollfade"></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

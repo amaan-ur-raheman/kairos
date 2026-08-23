@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos — Prototype ↔ Live App</title>
+<style>
+  :root { --ink:#2b2620; --muted:#6f6754; --ember:#c2410c; --paper:#faf7f2; --card:#fffdf9; --line:#e8e2d6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Inter, system-ui, sans-serif; background:#2b2620; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  header {
+    flex-shrink:0; display:flex; align-items:center; gap:16px;
+    padding:10px 16px; background:#fffdf9; border-bottom:1px solid var(--line);
+  }
+  header h1 { font-size:14px; font-weight:600; color:var(--ink); }
+  .tabs { display:flex; gap:4px; background:var(--paper); border:1px solid var(--line); border-radius:9px; padding:3px; }
+  .tabs button {
+    border:0; background:transparent; font:inherit; font-size:12.5px; font-weight:500;
+    color:var(--muted); padding:5px 14px; border-radius:7px; cursor:pointer;
+  }
+  .tabs button.on { background:var(--ember); color:#fff; }
+  .hint { margin-left:auto; font-size:11.5px; color:var(--muted); }
+  .hint b { color:var(--ember); }
+
+  .panes { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:2px; min-height:0; }
+  .pane { display:flex; flex-direction:column; min-width:0; background:var(--paper); }
+  .pane-label {
+    flex-shrink:0; font-family:"JetBrains Mono",monospace; font-size:9.5px; text-transform:uppercase;
+    letter-spacing:.14em; padding:7px 14px; background:#211d18; color:#d9c9b8;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .pane-label a { color:#e0b860; text-decoration:none; }
+  .pane iframe { flex:1; width:100%; border:0; background:#fff; }
+  .swapped .panes { direction:rtl; }
+  .swapped .panes > .pane { direction:ltr; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kairos · prototype ↔ live</h1>
+  <div class="tabs" id="tabs">
+    <button data-page="settings" class="on">Settings</button>
+    <button data-page="calendar">Calendar</button>
+    <button data-page="team">Team</button>
+    <button data-page="sign-in">Sign in</button>
+  </div>
+  <span class="hint">Right pane needs the dev server on <b>:3001</b> and you signed in. Scroll each pane independently.</span>
+</header>
+
+<div class="panes">
+  <div class="pane">
+    <div class="pane-label"><span>Prototype · d-<span id="labelL">settings</span>.html</span><a id="openL" href="d-settings.html" target="_blank">open ↗</a></div>
+    <iframe id="frameL" src="d-settings.html" title="Prototype"></iframe>
+  </div>
+  <div class="pane">
+    <div class="pane-label"><span>Live app · :3001/<span id="labelR">settings</span></span><a id="openR" href="http://localhost:3001/settings" target="_blank">open ↗</a></div>
+    <iframe id="frameR" src="http://localhost:3001/settings" title="Live app"></iframe>
+  </div>
+</div>
+
+<script>
+  const PROTO = {
+    settings: "d-settings.html",
+    calendar: "d-calendar.html",
+    team: "d-team.html",
+    "sign-in": "d-sign-in.html",
+  };
+  const LIVE = {
+    settings: "http://localhost:3001/settings",
+    calendar: "http://localhost:3001/calendar",
+    team: "http://localhost:3001/team",
+    "sign-in": "http://localhost:3001/",
+  };
+
+  const frameL = document.getElementById("frameL");
+  const frameR = document.getElementById("frameR");
+  const labelL = document.getElementById("labelL");
+  const labelR = document.getElementById("labelR");
+  const openL = document.getElementById("openL");
+  const openR = document.getElementById("openR");
+
+  document.getElementById("tabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const page = btn.dataset.page;
+    document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("on", b === btn));
+    frameL.src = PROTO[page];
+    frameR.src = LIVE[page];
+    labelL.textContent = page;
+    labelR.textContent = page === "sign-in" ? "(gate)" : page;
+    openL.href = PROTO[page];
+    openR.href = LIVE[page];
+  });
+</script>
+</body>
+</html>

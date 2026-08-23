@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Midnight — Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --canvas: #0e0e11; --surface-1: #141518; --surface-2: #191a1e; --surface-3: #1f2025;
+    --hairline: #232529; --hairline-strong:#33353b; --ink: #f7f8f8; --ink-muted: #9ca0a8; --ink-subtle: #62666d;
+    --accent: #5e6ad2; --accent-hover: #828fff; --accent-dim: rgba(94,106,210,.14);
+    --st-available:#27a644; --st-busy:#e5484d; --st-meeting:#f5a623;
+    --st-focus:#4ea7fc; --st-traveling:#ab8ff2; --st-offline:#6f737a;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { color-scheme:dark; }
+  body { font-family:'Inter',system-ui,sans-serif; font-weight:450; background:var(--canvas); color:var(--ink);
+    font-size:13.5px; line-height:1.45; letter-spacing:-0.01em; height:100vh; display:flex; overflow:hidden; }
+  .sidebar { width:216px; flex-shrink:0; background:var(--surface-1); border-right:1px solid var(--hairline); display:flex; flex-direction:column; }
+  .ws-button { display:flex; align-items:center; gap:9px; padding:22px 24px 18px; }
+  .ws-mark { width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#6a76e0,#464fb8);display:grid;place-items:center;font-size:10px;font-weight:600;color:#fff; }
+  .nav { padding:4px 8px; flex:1; }
+  .nav a { display:flex; align-items:center; gap:9px; padding:6px 10px; margin-bottom:1px; border-radius:6px; text-decoration:none; color:var(--ink-muted); font-size:13px; font-weight:500; }
+  .nav a:hover { background:var(--surface-2); color:var(--ink); }
+  .nav a.active { background:var(--accent-dim); color:var(--accent-hover); }
+
+  .main { flex:1; min-width:0; overflow-y:auto; }
+  .page { max-width:680px; margin:0 auto; padding:36px 32px 64px; }
+  h1 { font-size:19px; font-weight:600; letter-spacing:-0.02em; }
+  .sub { color:var(--ink-subtle); font-size:13px; margin-top:3px; margin-bottom:28px; }
+  .section-label { font-size:11px; font-weight:600; color:var(--ink-subtle); text-transform:uppercase; letter-spacing:.06em; margin:26px 0 10px; }
+
+  /* profile */
+  .profile {
+    display:flex; align-items:center; gap:16px;
+    background:var(--surface-1); border:1px solid var(--hairline);
+    border-radius:12px; padding:16px;
+  }
+  .avatar-lg {
+    width:48px; height:48px; border-radius:50%;
+    background:linear-gradient(135deg,#6a76e0,#464fb8);
+    display:grid; place-items:center; font-weight:600; font-size:16px; color:#fff;
+  }
+  .profile b { display:block; font-size:14.5px; font-weight:600; }
+  .profile span { font-size:12.5px; color:var(--ink-subtle); display:block; margin-top:1px; }
+  .role-tag { margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--accent-hover);
+    background:var(--accent-dim); border-radius:999px; padding:3px 10px; }
+
+  /* status grid */
+  .status-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .st-btn {
+    display:flex; align-items:center; gap:8px;
+    padding:10px 13px; border-radius:8px; cursor:pointer; font:inherit;
+    border:1px solid var(--hairline); background:var(--surface-1); color:var(--ink-muted);
+    transition:all .12s;
+  }
+  .st-btn i { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .st-btn:hover { background:var(--surface-2); }
+  .st-btn.on { border-color:rgba(94,106,210,.55); background:var(--accent-dim); color:var(--ink); }
+  .note-input {
+    margin-top:8px; width:100%;
+    background:var(--surface-1); border:1px solid var(--hairline); border-radius:8px;
+    color:var(--ink); font:inherit; font-size:13px; padding:9px 12px; outline:none;
+  }
+  .note-input:focus { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-dim); }
+  .expiry-row { display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+  .expiry-row label { font-size:12.5px; color:var(--ink-subtle); display:flex; gap:8px; align-items:center; cursor:pointer; }
+
+  /* working hours */
+  .hours { background:var(--surface-1); border:1px solid var(--hairline); border-radius:12px; overflow:hidden; }
+  .hrow { display:flex; align-items:center; gap:14px; padding:9px 16px; border-bottom:1px solid var(--hairline); }
+  .hrow:last-child { border-bottom:0; }
+  .hday { width:38px; font-size:12.5px; font-weight:600; color:var(--ink-muted); }
+  .switch { width:34px; height:20px; border-radius:999px; background:var(--hairline-strong); position:relative; cursor:pointer; flex-shrink:0; transition:background .15s; }
+  .switch::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .15s; }
+  .switch.on { background:var(--accent); }
+  .switch.on::after { left:16px; }
+  .time-box {
+    font-family:var(--mono); font-size:12px; color:var(--ink);
+    background:var(--surface-2); border:1px solid var(--hairline);
+    border-radius:6px; padding:4px 10px; cursor:pointer;
+  }
+  .sep { color:var(--ink-subtle); font-size:11px; }
+  .off-label { font-size:12px; color:var(--ink-subtle); }
+  .hrow.off { opacity:.45; }
+  .hrow:not(.off) .hday { color:var(--ink); }
+
+  .save-bar {
+    position:sticky; bottom:0; margin-top:26px; padding:12px 0;
+    display:flex; justify-content:flex-end; gap:10px; align-items:center;
+    background:linear-gradient(transparent, var(--canvas) 40%);
+  }
+  .save-hint { font-size:12px; color:var(--ink-subtle); margin-right:auto; }
+  .btn { font:inherit; font-size:12.5px; font-weight:600; border-radius:7px; padding:7px 16px; cursor:pointer; border:1px solid transparent; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:var(--accent-hover); }
+  .btn-ghost { background:transparent; color:var(--ink-muted); border-color:var(--hairline-strong); }
+  .signout { margin-top:34px; }
+  .signout button { background:none; border:none; color:#f2989b; font:inherit; font-size:12.5px; cursor:pointer; padding:0; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="ws-button"><div class="ws-mark">K</div><div><div style="font-weight:600">Acme Inc</div></div></div>
+  <nav class="nav">
+    <a href="a-calendar.html">Calendar</a>
+    <a href="a-team.html">Team</a>
+    <a href="#" class="active" style="color:var(--accent-hover)">Settings</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="page">
+    <h1>Settings</h1>
+    <p class="sub">Your status, schedule, and profile.</p>
+
+    <!-- Profile -->
+    <div class="profile">
+      <div class="avatar-lg">AK</div>
+      <div>
+        <b>Amaan Khan</b>
+        <span>amaan@acme.com · Backend Engineer · UTC+04:00 Dubai</span>
+      </div>
+      <span class="role-tag">owner</span>
+    </div>
+
+    <!-- Status -->
+    <div class="section-label">Status</div>
+    <div class="status-grid">
+      <button class="st-btn on"><i style="background:var(--st-available)"></i>Available</button>
+      <button class="st-btn"><i style="background:var(--st-busy)"></i>Busy</button>
+      <button class="st-btn"><i style="background:var(--st-meeting)"></i>In a Meeting</button>
+      <button class="st-btn"><i style="background:var(--st-focus)"></i>Focus Time</button>
+      <button class="st-btn"><i style="background:var(--st-traveling)"></i>Traveling</button>
+      <button class="st-btn"><i style="background:var(--st-offline)"></i>Offline</button>
+    </div>
+    <input class="note-input" placeholder="Add a note (optional) — shown to your team" value="Heads-down until standup">
+    <div class="expiry-row">
+      <label><input type="checkbox" checked> Clear automatically</label>
+      <span class="time-box" style="border-style:dashed">today · 5:00 PM ▾</span>
+    </div>
+
+    <!-- Working hours -->
+    <div class="section-label">Working hours</div>
+    <div class="hours">
+      <div class="hrow off"><span class="hday">Sun</span><div class="switch"></div><span class="off-label">Day off</span></div>
+      <div class="hrow"><span class="hday">Mon</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Tue</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Wed</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Thu</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Fri</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow off"><span class="hday">Sat</span><div class="switch"></div><span class="off-label">Day off</span></div>
+    </div>
+
+    <div class="save-bar">
+      <span class="save-hint">Changes apply to your team's view immediately after saving.</span>
+      <button class="btn btn-ghost">Reset</button>
+      <button class="btn btn-primary">Save changes</button>
+    </div>
+
+    <div class="signout"><button>Sign out of Kairos</button></div>
+  </div>
+</main>
+</body>
+</html>

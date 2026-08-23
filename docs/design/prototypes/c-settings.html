@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Aurora — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void:#0b0a14; --glass:rgba(255,255,255,.055); --glass-strong:rgba(255,255,255,.09);
+    --hairline:rgba(255,255,255,.10); --ink:#f2f1fb; --ink-muted:#a5a3c2; --ink-subtle:#6d6b8a;
+    --violet:#8b7cf6; --sky:#5bc0f8; --glow:rgba(139,124,246,.35);
+    --st-available:#34d399; --st-busy:#f87171; --st-meeting:#fbbf24;
+    --st-focus:#60a5fa; --st-traveling:#c084fc; --st-offline:#71767f;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  html{color-scheme:dark}
+  body { font-family:'Inter',system-ui,sans-serif;color:var(--ink);font-size:13.5px;line-height:1.45;height:100vh;overflow:hidden;position:relative;
+    background:
+      radial-gradient(1100px 650px at 90% -10%, rgba(91,192,248,.15), transparent 55%),
+      radial-gradient(1000px 750px at -5% -12%, rgba(139,124,246,.26), transparent 55%),
+      linear-gradient(180deg,#12102a 0%, var(--void) 55%); }
+
+  .topbar { height:58px;display:flex;align-items:center;gap:20px;padding:0 22px;margin:12px 16px 0;border-radius:14px;
+    background:var(--glass);border:1px solid var(--hairline);backdrop-filter:blur(18px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 8px 32px rgba(5,4,15,.45); }
+  .logo{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14.5px}
+  .logo-mark{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;color:#fff;font-size:11px;background:linear-gradient(135deg,var(--violet),var(--sky));box-shadow:0 0 18px var(--glow)}
+  nav{display:flex;gap:4px}
+  nav a{color:var(--ink-muted);text-decoration:none;font-size:13px;font-weight:500;padding:6px 14px;border-radius:999px}
+  nav a:hover{color:var(--ink);background:var(--glass-strong)}
+  nav a.active{color:#fff;background:var(--glass-strong)}
+
+  .stage{padding:14px 16px 18px;height:calc(100vh - 84px)}
+  .panel{height:100%;border-radius:18px;overflow:auto;background:var(--glass);border:1px solid var(--hairline);
+    backdrop-filter:blur(22px);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 16px 48px rgba(5,4,15,.5);
+    padding:28px 34px 40px;}
+  .inner { max-width:620px; margin:0 auto; }
+  h1{font-size:19px;font-weight:600}
+  .sub{color:var(--ink-subtle);margin:2px 0 26px}
+
+  .profile { display:flex;align-items:center;gap:16px;padding:16px;border-radius:14px;
+    background:var(--glass-strong); border:1px solid var(--hairline); box-shadow:inset 0 1px 0 rgba(255,255,255,.07); }
+  .avatar-lg { width:50px;height:50px;border-radius:16px;display:grid;place-items:center;color:#fff;font-weight:600;font-size:16px;
+    background:linear-gradient(135deg,var(--violet),var(--sky)); box-shadow:0 0 22px var(--glow); }
+  .profile b{display:block;font-size:14.5px}
+  .profile span{font-size:12.5px;color:var(--ink-subtle);display:block;margin-top:2px}
+  .role-tag{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:#c9c2ff;background:rgba(139,124,246,.16);border:1px solid rgba(139,124,246,.3);border-radius:999px;padding:4px 12px}
+
+  .section-label { font-size:11px;font-weight:600;color:var(--ink-subtle);text-transform:uppercase;letter-spacing:.07em;margin:28px 0 11px }
+  .status-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:9px }
+  .st-btn { display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:12px;cursor:pointer;font:inherit;font-size:13px;font-weight:500;
+    color:var(--ink-muted);background:var(--glass);border:1px solid var(--hairline);transition:all .13s; }
+  .st-btn i { width:8px;height:8px;border-radius:50%;flex-shrink:0 }
+  .st-btn:hover { background:var(--glass-strong) }
+  .st-btn.on { color:#fff;background:linear-gradient(135deg, rgba(139,124,246,.22), rgba(91,192,248,.12));
+    border-color:rgba(139,124,246,.5); box-shadow:0 0 18px rgba(139,124,246,.18), inset 0 1px 0 rgba(255,255,255,.1); }
+  .note-input { margin-top:9px;width:100%;background:var(--glass);border:1px solid var(--hairline);border-radius:12px;
+    color:var(--ink);font:inherit;font-size:13px;padding:11px 14px;outline:none;transition:border-color .15s }
+  .note-input:focus { border-color:var(--violet); box-shadow:0 0 0 3px rgba(139,124,246,.15) }
+  .expiry-row { display:flex;justify-content:space-between;align-items:center;margin-top:11px;font-size:12.5px;color:var(--ink-muted) }
+
+  .hours { border-radius:14px;overflow:hidden;border:1px solid var(--hairline);background:var(--glass) }
+  .hrow { display:flex;align-items:center;gap:16px;padding:10px 17px;border-bottom:1px solid rgba(255,255,255,.055) }
+  .hrow:last-child{border-bottom:0}
+  .hday{width:38px;font-size:12.5px;font-weight:600;color:var(--ink-muted)}
+  .switch{width:36px;height:21px;border-radius:999px;background:rgba(255,255,255,.14);position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
+  .switch::after{content:'';position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;transition:left .15s}
+  .switch.on{background:linear-gradient(135deg,var(--violet),#7048e8);box-shadow:0 0 10px var(--glow)}
+  .switch.on::after{left:17px}
+  .time-box{font-family:var(--mono);font-size:11.5px;background:rgba(0,0,0,.25);border:1px solid var(--hairline);border-radius:7px;padding:4px 10px;cursor:pointer}
+  .sep{color:var(--ink-subtle);font-size:11px}
+  .off-label{font-size:12px;color:var(--ink-subtle)}
+  .hrow.off{opacity:.45}
+
+  .save-bar{position:sticky;bottom:0;margin-top:28px;padding:14px 0;display:flex;justify-content:flex-end;gap:10px;align-items:center}
+  .save-hint{font-size:12px;color:var(--ink-subtle);margin-right:auto}
+  .btn-pill-sm{border:none;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;color:#fff;padding:8px 18px;border-radius:999px;
+    background:linear-gradient(135deg,var(--violet),#7048e8);box-shadow:0 0 18px var(--glow)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><div class="logo-mark">K</div>kairos</div>
+  <nav>
+    <a href="c-calendar.html">Calendar</a>
+    <a href="c-team.html">Team</a>
+    <a href="#" class="active">Settings</a>
+  </nav>
+</header>
+
+<div class="stage">
+  <div class="panel"><div class="inner">
+    <h1>Settings</h1>
+    <p class="sub">Your status, schedule, and profile.</p>
+
+    <div class="profile">
+      <div class="avatar-lg">AK</div>
+      <div><b>Amaan Khan</b><span>amaan@acme.com · Backend Engineer · UTC+04:00 Dubai</span></div>
+      <span class="role-tag">owner</span>
+    </div>
+
+    <div class="section-label">Status</div>
+    <div class="status-grid">
+      <button class="st-btn on"><i style="background:var(--st-available)"></i>Available</button>
+      <button class="st-btn"><i style="background:var(--st-busy)"></i>Busy</button>
+      <button class="st-btn"><i style="background:var(--st-meeting)"></i>In a Meeting</button>
+      <button class="st-btn"><i style="background:var(--st-focus)"></i>Focus Time</button>
+      <button class="st-btn"><i style="background:var(--st-traveling)"></i>Traveling</button>
+      <button class="st-btn"><i style="background:var(--st-offline)"></i>Offline</button>
+    </div>
+    <input class="note-input" value="Heads-down until standup" placeholder="Add a note (optional)">
+    <div class="expiry-row">
+      <label><input type="checkbox" checked> Clear automatically</label>
+      <span style="font-family:var(--mono);font-size:11.5px">today · 5:00 PM ▾</span>
+    </div>
+
+    <div class="section-label">Working hours</div>
+    <div class="hours">
+      <div class="hrow off"><span class="hday">Sun</span><div class="switch"></div><span class="off-label">Day off</span></div>
+      <div class="hrow"><span class="hday">Mon</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Tue</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Wed</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Thu</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow"><span class="hday">Fri</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+      <div class="hrow off"><span class="hday">Sat</span><div class="switch"></div><span class="off-label">Day off</span></div>
+    </div>
+
+    <div class="save-bar">
+      <span class="save-hint">Changes apply to your team's view after saving.</span>
+      <button class="btn-pill-sm">Save changes</button>
+    </div>
+  </div></div>
+</div>
+</body>
+</html>

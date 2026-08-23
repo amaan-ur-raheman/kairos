@@ -12,6 +12,7 @@ export const env = createEnv({
     VITE_SERVER_URL: serverUrlSchema,
     VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1),
   },
+  // biome-ignore lint/suspicious/noExplicitAny: import.meta.env is untyped in this package (no vite/client types); schema below validates it
   runtimeEnv: (import.meta as any).env,
   emptyStringAsUndefined: true,
 });

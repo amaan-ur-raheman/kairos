@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team - Kairos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="notion-design-system.css">
+<style>
+.team-wrap { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.page-desc { font-size: 14px; color: var(--stone); margin-top: 4px; }
+.page-actions { display: flex; gap: 8px; align-items: center; }
+
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+.filter-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* Status Group - no uppercase eyebrows */
+.status-group { margin-bottom: 28px; }
+.status-group:last-child { margin-bottom: 0; }
+.group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 0 4px; }
+.group-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.group-label { font-size: 12px; font-weight: 600; color: var(--slate); }
+.group-count { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+/* Member Row */
+.member-row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: var(--radius); transition: background 0.15s ease; cursor: pointer; }
+.member-row:hover { background: var(--surface); }
+.member-row + .member-row { border-top: 1px solid var(--hairline-soft); }
+.member-row:first-child { border-top: 1px solid var(--hairline-soft); }
+.member-row:last-child { border-bottom: 1px solid var(--hairline-soft); }
+
+.member-avatar { width: 36px; height: 36px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; position: relative; }
+.member-avatar .dot { position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--canvas); }
+
+.member-main { flex: 1; min-width: 0; }
+.member-name { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+.member-meta { font-size: 12px; color: var(--stone); margin-top: 1px; display: flex; align-items: center; gap: 6px; }
+.member-meta-sep { color: var(--hairline); }
+
+.member-note { font-size: 12px; color: var(--steel); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; text-align: right; flex-shrink: 0; }
+
+.member-time { font-size: 11px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .team-wrap { padding: 24px 16px; }
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .member-note { display: none; }
+  .member-time { display: none; }
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand">kairos</div>
+  <div class="nav-links">
+    <a class="nav-link" href="calendar-preview-notion.html">Calendar</a>
+    <a class="nav-link active" href="#">Team</a>
+    <a class="nav-link" href="settings-preview-6-notion-tinted.html">Settings</a>
+  </div>
+  <a href="settings-preview-6-notion-tinted.html" style="text-decoration:none"><div class="nav-avatar">AK</div></a>
+</nav>
+
+<div class="team-wrap">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Team</h1>
+      <p class="page-desc">Who's around right now.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn-sm">Export</button>
+      <button class="btn-sm primary">Invite</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search members...">
+    </div>
+    <div class="filter-pills">
+      <button class="pill active">All</button>
+      <button class="pill">Available</button>
+      <button class="pill">Busy</button>
+      <button class="pill">Focus</button>
+      <button class="pill">Offline</button>
+    </div>
+  </div>
+
+  <div class="status-group">
+    <div class="group-header">
+      <div class="group-dot" style="background:var(--green)"></div>
+      <span class="group-label">Available</span>
+      <span class="group-count">4 members</span>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#1aae39,#34d399)"><span>SC</span><div class="dot" style="background:var(--green)"></div></div>
+      <div class="member-main"><div class="member-name">Sarah Chen</div><div class="member-meta">Product Designer <span class="member-meta-sep">&middot;</span> sarah@kairos.app</div></div>
+      <div class="member-note">"Working on new onboarding flow"</div>
+      <div class="member-time">since 9:00 AM</div>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#2a9d99,#34d399)"><span>JR</span><div class="dot" style="background:var(--green)"></div></div>
+      <div class="member-main"><div class="member-name">James Rodriguez</div><div class="member-meta">Backend Engineer <span class="member-meta-sep">&middot;</span> james@kairos.app</div></div>
+      <div class="member-note">"Available for code reviews"</div>
+      <div class="member-time">since 8:30 AM</div>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#7b3ff2,#a855f7)"><span>AP</span><div class="dot" style="background:var(--green)"></div></div>
+      <div class="member-main"><div class="member-name">Ana Pereira</div><div class="member-meta">Data Analyst <span class="member-meta-sep">&middot;</span> ana@kairos.app</div></div>
+      <div class="member-note">"Ready for standup"</div>
+      <div class="member-time">since 9:15 AM</div>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#2a9d99,#0d9488)"><span>RJ</span><div class="dot" style="background:var(--green)"></div></div>
+      <div class="member-main"><div class="member-name">Rachel Jones</div><div class="member-meta">Technical Writer <span class="member-meta-sep">&middot;</span> rachel@kairos.app</div></div>
+      <div class="member-note">"Wrapping up API docs"</div>
+      <div class="member-time">since 10:00 AM</div>
+    </div>
+  </div>
+
+  <div class="status-group">
+    <div class="group-header">
+      <div class="group-dot" style="background:var(--orange)"></div>
+      <span class="group-label">In Meeting</span>
+      <span class="group-count">1 member</span>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#dd5b00,#f59e0b)"><span>MW</span><div class="dot" style="background:var(--orange)"></div></div>
+      <div class="member-main"><div class="member-name">Maya Williams</div><div class="member-meta">Engineering Manager <span class="member-meta-sep">&middot;</span> maya@kairos.app</div></div>
+      <div class="member-note">"Sprint planning until 2pm"</div>
+      <div class="member-time">since 11:00 AM</div>
+    </div>
+  </div>
+
+  <div class="status-group">
+    <div class="group-header">
+      <div class="group-dot" style="background:var(--blue)"></div>
+      <span class="group-label">Focus Time</span>
+      <span class="group-count">2 members</span>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#5645d4,#7b3ff2)"><span>AK</span><div class="dot" style="background:var(--blue)"></div></div>
+      <div class="member-main"><div class="member-name">Amaan Khan</div><div class="member-meta">Frontend Engineer <span class="member-meta-sep">&middot;</span> amaan@kairos.app</div></div>
+      <div class="member-note">"Deep work on calendar view"</div>
+      <div class="member-time">since 10:30 AM</div>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#e03131,#f87171)"><span>LK</span><div class="dot" style="background:var(--blue)"></div></div>
+      <div class="member-main"><div class="member-name">Lisa Kim</div><div class="member-meta">UX Researcher <span class="member-meta-sep">&middot;</span> lisa@kairos.app</div></div>
+      <div class="member-note">"User interviews until noon"</div>
+      <div class="member-time">since 9:00 AM</div>
+    </div>
+  </div>
+
+  <div class="status-group">
+    <div class="group-header">
+      <div class="group-dot" style="background:var(--red)"></div>
+      <span class="group-label">Busy</span>
+      <span class="group-count">1 member</span>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#e03131,#ef4444)"><span>DP</span><div class="dot" style="background:var(--red)"></div></div>
+      <div class="member-main"><div class="member-name">David Park</div><div class="member-meta">DevOps Engineer <span class="member-meta-sep">&middot;</span> david@kairos.app</div></div>
+      <div class="member-note">"Deploying v2.4 to staging"</div>
+      <div class="member-time">since 11:30 AM</div>
+    </div>
+  </div>
+
+  <div class="status-group">
+    <div class="group-header">
+      <div class="group-dot" style="background:var(--stone)"></div>
+      <span class="group-label">Offline</span>
+      <span class="group-count">1 member</span>
+    </div>
+    <div class="member-row">
+      <div class="member-avatar" style="background:linear-gradient(135deg,#a4a097,#bbb8b1)"><span>TN</span><div class="dot" style="background:var(--stone)"></div></div>
+      <div class="member-main"><div class="member-name">Tom Nakamura</div><div class="member-meta">QA Engineer <span class="member-meta-sep">&middot;</span> tom@kairos.app</div></div>
+      <div class="member-note">"Out of office today"</div>
+      <div class="member-time">last seen yesterday</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

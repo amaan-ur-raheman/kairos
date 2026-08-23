@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Member Schedule — Amaan Khan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#faf7f2; --paper-deep:#f3efe6; --card:#fffdf9;
+    --line:#e8e2d6; --line-strong:#d8d0c0;
+    --ink:#2b2620; --ink-body:#57503f; --ink-muted:#6f6754;
+    --ember:#c2410c; --ember-deep:#9a3412; --ember-soft:#fbe9dd;
+    --st-available:#3f9142; --st-busy:#c93c37; --st-meeting:#b98212;
+    --st-focus:#3b6fb5; --st-traveling:#7d55b5; --st-offline:#8a8271;
+    --tint-work:#eaf4ea; --tint-focus:#eef4fc; --tint-meeting:#faf3e2; --tint-leave:#faecea;
+    --serif:'Source Serif 4',Georgia,serif; --sans:'Inter',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --ease-out:cubic-bezier(0.23,1,0.32,1);
+    --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:999px;
+  }
+  html{overflow-x:clip}
+  *{margin:0;padding:0;box-sizing:border-box}
+  :focus-visible{outline:2px solid var(--ember);outline-offset:2px;border-radius:var(--r-sm)}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:13.5px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden;overflow-x:clip}
+  h1,h2,h3{overflow-wrap:anywhere;min-width:0} h1{text-wrap:balance} p{text-wrap:pretty}
+  .masthead{height:60px;flex-shrink:0;display:flex;align-items:center;padding:0 30px;background:var(--card);border-bottom:3px double var(--line-strong);gap:26px}
+  .logo{font-family:var(--serif);font-weight:600;font-size:19px;display:flex;align-items:center;gap:10px}
+  .logo-mark{width:25px;height:25px;border-radius:50%;background:var(--ember);color:#fff;display:grid;place-items:center;font-family:var(--sans);font-size:11px;font-weight:700}
+  .mast-nav{display:flex;gap:22px}
+  .mast-nav a{color:var(--ink-muted);text-decoration:none;font-size:13.5px;font-weight:500}
+  .mast-nav a.active{color:var(--ember);text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
+  .avatar-chip{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--ember);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:12.5px;font-weight:600}
+  /* page */
+  .page{max-width:920px;width:100%;margin:0 auto;padding:28px 30px 48px;flex:1;overflow:auto}
+  .back{font-size:13px;font-weight:500;color:var(--ember);text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+  .back:hover{text-decoration:underline}
+  /* hero — product register: restrained, sans for UI, serif for name */
+  .hero{margin-top:18px;display:grid;grid-template-columns:64px 1fr auto;gap:18px;align-items:start}
+  .hero-avatar{width:64px;height:64px;border-radius:50%;background:var(--ember);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:22px;font-weight:600;position:relative;flex-shrink:0}
+  .live-dot{position:absolute;bottom:2px;right:2px;width:14px;height:14px;border-radius:50%;background:var(--st-available);border:3px solid var(--card)}
+  .hero-name{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.1;text-wrap:balance;overflow-wrap:anywhere;min-width:0}
+  .hero-meta{font-size:13px;color:var(--ink-muted);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .hero-meta b{font-weight:500;color:var(--ink-body)}
+  .pill{font-size:12px;font-weight:500;background:var(--card);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 11px;color:var(--ink-body)}
+  .tz{font-family:var(--mono);font-size:11px;color:var(--ink-muted);display:inline-flex;gap:6px;align-items:center}
+  .tz i{width:6px;height:6px;border-radius:50%;background:var(--st-available)}
+  .hero-actions{display:flex;gap:8px;align-items:center}
+  .btn-ghost{font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-body);background:var(--card);border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:8px 12px;cursor:pointer}
+  .btn-ember{font:inherit;font-size:12.5px;font-weight:600;color:#fff;background:var(--ember);border:none;border-radius:var(--r-sm);padding:8px 14px;cursor:pointer}
+  .btn-ghost:hover{background:var(--paper-deep)} .btn-ember:hover{background:var(--ember-deep)}
+  .hero-skills{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .skill{font-size:12px;font-weight:500;background:var(--card);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 12px;color:var(--ink-body)}
+  /* week controls */
+  .week-bar{margin-top:22px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .week-title{font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+  .week-range{font-family:var(--mono);font-size:11px;color:var(--ink-muted)}
+  .week-actions{margin-left:auto;display:flex;gap:8px}
+  .wk-btn{width:44px;height:44px;min-width:44px;min-height:44px;border:1px solid var(--line-strong);background:var(--card);border-radius:var(--r-sm);cursor:pointer;display:grid;place-items:center;font-size:14px}
+  .wk-today{border:1px solid var(--line-strong);background:var(--card);border-radius:var(--r-sm);font:inherit;font-size:12.5px;font-weight:500;padding:7px 14px;cursor:pointer;color:var(--ink-body)}
+  /* grid — product, not brand: restrained, no orchestrated entrance */
+  .grid-wrap{margin-top:14px;border:1px solid var(--line);border-radius:var(--r-md);overflow:auto;max-height:62vh;background:var(--card)}
+  .grid-head{display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr));background:var(--paper-deep);border-bottom:1px solid var(--line)}
+  .gh{padding:8px 4px;text-align:center}
+  .gh .dname{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--ink-muted)}
+  .gh.today .dname{color:var(--ember)}
+  .gh .dnum{font-family:var(--mono);font-size:12px;margin:3px auto 0;width:22px;height:22px;line-height:22px;border-radius:50%}
+  .gh.today .dnum{background:var(--ember);color:#fff}
+  .grid{position:relative;display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr))}
+  .gutter{position:relative;border-right:1px solid var(--line)}
+  .gutter span{position:absolute;right:8px;font-family:var(--mono);font-size:9px;color:var(--ink-muted)}
+  .col{position:relative;border-right:1px solid var(--line);min-height:840px}
+  .col:last-child{border-right:0}
+  .col.weekend{background:linear-gradient(180deg,var(--paper-deep),transparent 40%)}
+  .col.today{background:linear-gradient(180deg,var(--ember-soft),transparent 26%)}
+  .hour-line{height:60px;border-bottom:1px solid #efeae0}
+  .now{position:absolute;left:0;right:0;z-index:2;pointer-events:none}
+  .now::before{content:'';position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--ember)}
+  .now::after{content:'';position:absolute;left:4px;right:0;top:-1px;height:1px;background:var(--ember)}
+  .ev{position:absolute;left:4px;right:5px;border-radius:var(--r-sm);padding:6px 8px;font-size:11.5px;overflow:hidden;background:var(--card);border:1px solid var(--line);cursor:default}
+  .ev b{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ev b::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ev-c);margin-right:6px;vertical-align:1px}
+  .ev-time{font-family:var(--mono);font-size:9px;color:var(--ink-muted);display:block;margin-top:1px}
+  .ev-work{--ev-c:var(--st-available);background:var(--tint-work)}
+  .ev-focus{--ev-c:var(--st-focus);background:var(--tint-focus)}
+  .ev-meet{--ev-c:var(--st-meeting);background:var(--tint-meeting)}
+  .ev-leave{--ev-c:var(--st-busy);background:var(--tint-leave)}
+  .ev:hover{border-color:var(--line-strong)}
+  @media(max-width:860px){
+    .hero{grid-template-columns:64px 1fr}
+    .hero-actions{grid-column:1/-1}
+    .grid-wrap{overflow-x:auto}
+    .grid{ min-width:720px}
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="logo"><div class="logo-mark">K</div>kairos</div>
+  <nav class="mast-nav">
+    <a href="d-calendar.html">Calendar</a>
+    <a href="d-team.html" class="active">Team</a>
+    <a href="d-settings.html">Settings</a>
+  </nav>
+  <div class="avatar-chip">AK</div>
+</header>
+
+<div class="page">
+  <a class="back" href="d-team.html">← Back to team</a>
+
+  <div class="hero">
+    <div class="hero-avatar" role="img" aria-label="Amaan Khan — Available">AK<div class="live-dot" aria-hidden="true"></div></div>
+    <div>
+      <h1 class="hero-name">Amaan Khan</h1>
+      <div class="hero-meta">
+        <b>Backend Engineer</b> · <span>amaan@fieldnote.studio</span>
+      </div>
+
+    </div>
+    <div class="hero-actions">
+      <button class="btn-ghost" aria-label="Copy profile link" style="min-height:44px;min-width:44px">Copy link</button>
+      <button class="btn-ember" aria-label="Message Amaan Khan" style="min-height:44px">Message</button>
+    </div>
+  </div>
+
+  <div class="week-bar" style="margin-top:26px">
+    <div>
+      <div class="week-title">Week of Feb 10–16</div>
+      <div class="week-range">Feb 10-16 · Week 7</div>
+    </div>
+    <div class="week-actions">
+      <button class="wk-btn" aria-label="Prev">‹</button>
+      <button class="wk-today">Today</button>
+      <button class="wk-btn" aria-label="Next">›</button>
+    </div>
+  </div>
+
+  <div class="grid-wrap" id="gridWrap">
+    <div class="grid-head" id="gridHead"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+</div>
+
+<script>
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], NUMS=[10,11,12,13,14,15,16];
+document.getElementById('gridHead').innerHTML='<div></div>'+DAYS.map((d,i)=>`<div class="gh${i===3?' today':''}"><div class="dname">${d}</div><div class="dnum">${NUMS[i]}</div></div>`).join('');
+const START=0, END=24, H=60;
+const grid=document.getElementById('grid');
+const gutter=document.createElement('div'); gutter.className='gutter';
+for(let h=START;h<END;h++){
+  const s=document.createElement('span'); s.textContent=((h%12)||12)+(h<12?' AM':' PM');
+  const isFirst=h===START, isLast=h===END-1;
+  s.style.top=isFirst?'6px':(h-START)*H+'px';
+  s.style.transform=isFirst?'none':isLast?'translateY(-100%)':'translateY(-50%)';
+  gutter.appendChild(s);
+}
+grid.appendChild(gutter);
+for(let c=0;c<7;c++){
+  const col=document.createElement('div'); col.className='col'+(c>=5?' weekend':'')+(c===3?' today':'');
+  for(let h=START;h<END;h++) col.insertAdjacentHTML('beforeend','<div class="hour-line"></div>');
+  if(c===3){
+    const n=document.createElement('div'); n.className='now'; n.style.top=(10.6-START)*H+'px'; col.appendChild(n);
+    col.insertAdjacentHTML('beforeend',`<div class="ev ev-focus" style="top:${(9-START)*H+3}px;height:${2*H-7}px"><b>Focus Time</b><span class="ev-time">9:00–11:00</span></div>`);
+    col.insertAdjacentHTML('beforeend',`<div class="ev ev-meet" style="top:${(13-START)*H+3}px;height:${H-7}px"><b>Design sync</b><span class="ev-time">1:00–2:00 PM</span></div>`);
+  }
+  if([0,1,2,4].includes(c)) col.insertAdjacentHTML('beforeend',`<div class="ev ev-work" style="top:${(9-START)*H+3}px;height:${8*H-7}px"><b>Working hours</b><span class="ev-time">9:00–5:00</span></div>`);
+  if(c===5) col.insertAdjacentHTML('beforeend',`<div class="ev ev-leave" style="top:${(9-START)*H+3}px;height:${8*H-7}px"><b>Leave · Vacation</b><span class="ev-time">all day</span></div>`);
+  if(c===1) col.insertAdjacentHTML('beforeend',`<div class="ev ev-meet" style="top:${(15-START)*H+3}px;height:53px"><b>1:1 with Priya</b><span class="ev-time">3:00–3:45 PM</span></div>`);
+  grid.appendChild(col);
+}
+// 24h auto-scroll to current hour — robust, retries until layout ready
+function scrollToNow(){
+  const wrap=document.getElementById('gridWrap');
+  if(!wrap) return;
+  const now=new Date(); const dec=now.getHours()+now.getMinutes()/60;
+  const top=Math.max(0,(dec-START)*H-80);
+  const max=wrap.scrollHeight - wrap.clientHeight;
+  wrap.scrollTop = Math.min(top, Math.max(0, max));
+}
+setTimeout(scrollToNow, 250);
+requestAnimationFrame(()=> setTimeout(scrollToNow, 120));
+window.addEventListener('load', ()=> setTimeout(scrollToNow, 80));
+</script>
+</body>
+</html>

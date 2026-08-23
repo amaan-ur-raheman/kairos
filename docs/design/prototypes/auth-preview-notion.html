@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Kairos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="notion-design-system.css">
+<style>
+.auth-layout { display: flex; min-height: 100vh; }
+.auth-left { flex: 1; background: var(--canvas); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 48px; }
+.auth-left-inner { max-width: 380px; width: 100%; }
+.auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+.auth-logo-mark { width: 36px; height: 36px; border-radius: var(--radius-lg); background: var(--charcoal); display: flex; align-items: center; justify-content: center; color: var(--on-primary); font-size: 16px; font-weight: 700; }
+.auth-logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.auth-title { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 8px; }
+.auth-desc { font-size: 15px; color: var(--stone); margin-bottom: 32px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--charcoal); margin-bottom: 6px; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+.auth-divider-line { flex: 1; height: 1px; background: var(--hairline); }
+.auth-divider-text { font-size: 12px; color: var(--muted); font-weight: 500; }
+.social-btn { width: 100%; padding: 10px; border-radius: var(--radius); background: var(--canvas); border: 1px solid var(--hairline); font-size: 13px; font-weight: 600; color: var(--charcoal); cursor: pointer; font-family: inherit; transition: all 0.15s ease; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
+.social-btn:hover { background: var(--surface); }
+.social-icon { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.auth-footer { font-size: 12px; color: var(--muted); text-align: center; margin-top: 24px; }
+.auth-footer a { color: var(--charcoal); text-decoration: none; font-weight: 500; }
+
+/* Right panel - product preview, not decorative blobs */
+.auth-right { flex: 1; background: var(--surface); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 48px; position: relative; overflow: hidden; }
+.auth-right-content { position: relative; z-index: 1; max-width: 380px; }
+.auth-right-title { font-size: 22px; font-weight: 700; color: var(--charcoal); letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 8px; }
+.auth-right-desc { font-size: 14px; color: var(--stone); margin-bottom: 28px; line-height: 1.6; }
+
+/* Mini calendar preview */
+.mini-preview { background: var(--canvas); border: 1px solid var(--hairline-soft); border-radius: var(--radius-xl); padding: 20px; margin-bottom: 24px; }
+.mini-preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.mini-preview-title { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+.mini-preview-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.mini-preview-dow { font-size: 9px; font-weight: 600; color: var(--muted); padding: 2px 0; }
+.mini-preview-day { font-size: 11px; padding: 4px; border-radius: var(--radius); color: var(--slate); font-weight: 500; }
+.mini-preview-day.today { background: var(--charcoal); color: var(--on-primary); font-weight: 700; }
+.mini-preview-day.other { color: var(--muted); }
+.mini-preview-event { margin-top: 12px; padding: 8px 10px; border-radius: var(--radius); background: var(--green-soft); border: 1px solid rgba(26,174,57,0.15); }
+.mini-preview-event-title { font-size: 11px; font-weight: 600; color: var(--green); }
+.mini-preview-event-time { font-size: 10px; color: var(--stone); margin-top: 1px; }
+
+.auth-testimonial { background: var(--tint-lavender); border-radius: var(--radius-xl); padding: 20px; }
+.auth-testimonial-text { font-size: 13px; color: var(--slate); line-height: 1.6; font-style: italic; margin-bottom: 8px; }
+.auth-testimonial-author { font-size: 11px; color: var(--steel); font-weight: 600; }
+@media (max-width: 768px) { .auth-right { display: none; } }
+</style>
+</head>
+<body>
+<div class="auth-layout">
+  <div class="auth-left">
+    <div class="auth-left-inner">
+      <div class="auth-logo">
+        <div class="auth-logo-mark">K</div>
+        <div class="auth-logo-text">kairos</div>
+      </div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-desc">Sign in to your workspace to view your team's schedule.</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" placeholder="you@company.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" placeholder="Enter your password">
+      </div>
+      <a href="calendar-preview-notion.html" style="display:block;text-decoration:none"><button class="btn btn-primary" style="width:100%">Sign In</button></a>
+      <a href="calendar-preview-notion.html" style="display:block;text-decoration:none"><button class="btn btn-secondary" style="width:100%;margin-top:8px">Create Account</button></a>
+      <div class="auth-divider">
+        <div class="auth-divider-line"></div>
+        <span class="auth-divider-text">or continue with</span>
+        <div class="auth-divider-line"></div>
+      </div>
+      <button class="social-btn"><span class="social-icon" style="background:#4285f4;color:#fff">G</span>Google</button>
+      <button class="social-btn"><span class="social-icon" style="background:#24292e;color:#fff">GH</span>GitHub</button>
+      <div class="auth-footer">By signing in, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-right-content">
+      <h2 class="auth-right-title">See who's around, at a glance</h2>
+      <p class="auth-right-desc">Real-time availability for your whole team. No more "are you free?" messages.</p>
+      <div class="mini-preview">
+        <div class="mini-preview-header">
+          <span class="mini-preview-title">This Week</span>
+          <span style="font-size:11px;color:var(--stone)">Aug 18 - 24</span>
+        </div>
+        <div class="mini-preview-grid">
+          <span class="mini-preview-dow">M</span><span class="mini-preview-dow">T</span><span class="mini-preview-dow">W</span><span class="mini-preview-dow">T</span><span class="mini-preview-dow">F</span><span class="mini-preview-dow">S</span><span class="mini-preview-dow">S</span>
+          <span class="mini-preview-day">18</span><span class="mini-preview-day">19</span><span class="mini-preview-day">20</span><span class="mini-preview-day">21</span><span class="mini-preview-day today">22</span><span class="mini-preview-day">23</span><span class="mini-preview-day">24</span>
+        </div>
+        <div class="mini-preview-event">
+          <div class="mini-preview-event-title">Focus Time - Amaan</div>
+          <div class="mini-preview-event-time">9:00 - 11:00 AM</div>
+        </div>
+      </div>
+      <div class="auth-testimonial">
+        <div class="auth-testimonial-text">"Kairos eliminated our daily 'who's free?' standup overflow. We just check the board."</div>
+        <div class="auth-testimonial-author">Maya Williams, Engineering Manager</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

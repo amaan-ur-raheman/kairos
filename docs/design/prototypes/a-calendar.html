@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Midnight — Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Direction A "Midnight" — Linear-inspired ─────────────────── */
+  :root {
+    --canvas: #0e0e11;
+    --surface-1: #141518;
+    --surface-2: #191a1e;
+    --surface-3: #1f2025;
+    --hairline: #232529;
+    --hairline-strong: #33353b;
+    --ink: #f7f8f8;
+    --ink-muted: #9ca0a8;
+    --ink-subtle: #62666d;
+    --accent: #5e6ad2;
+    --accent-hover: #828fff;
+    --accent-dim: rgba(94, 106, 210, 0.14);
+    /* product status semantics — locked across all directions */
+    --st-available: #27a644; --st-available-bg: rgba(39,166,68,.13);
+    --st-busy: #e5484d;     --st-busy-bg: rgba(229,72,77,.12);
+    --st-meeting: #f5a623;  --st-meeting-bg: rgba(245,166,35,.12);
+    --st-focus: #4ea7fc;    --st-focus-bg: rgba(78,167,252,.12);
+    --st-traveling: #ab8ff2;--st-traveling-bg: rgba(171,143,242,.12);
+    --st-offline: #6f737a;  --st-offline-bg: rgba(111,115,122,.15);
+    --radius: 8px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 450;
+    background: var(--canvas);
+    color: var(--ink);
+    font-size: 13.5px;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 216px; flex-shrink: 0;
+    background: var(--surface-1);
+    border-right: 1px solid var(--hairline);
+    display: flex; flex-direction: column;
+  }
+  .workspace { padding: 14px 14px 10px; }
+  .ws-button {
+    display: flex; align-items: center; gap: 9px;
+    width: 100%; padding: 8px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .ws-button:hover { background: var(--surface-2); }
+  .ws-mark {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(135deg, #6a76e0, #464fb8);
+    display: grid; place-items: center;
+    font-size: 10px; font-weight: 600; color: #fff;
+  }
+  .ws-name { font-weight: 600; font-size: 13px; }
+  .ws-sub { font-size: 11px; color: var(--ink-subtle); }
+
+  .nav { padding: 4px 8px; flex: 1; }
+  .nav-label {
+    font-size: 11px; font-weight: 600; color: var(--ink-subtle);
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 14px 10px 6px;
+  }
+  .nav a {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 10px; margin-bottom: 1px;
+    border-radius: 6px; text-decoration: none;
+    color: var(--ink-muted); font-size: 13px; font-weight: 500;
+  }
+  .nav a:hover { background: var(--surface-2); color: var(--ink); }
+  .nav a.active { background: var(--accent-dim); color: var(--accent-hover); }
+  .nav svg { width: 15px; height: 15px; stroke-width: 1.8; }
+
+  .me { padding: 10px 14px 14px; border-top: 1px solid var(--hairline); display: flex; align-items: center; gap: 9px; }
+  .me img, .avatar-fallback { width: 26px; height: 26px; border-radius: 50%; }
+  .me-name { font-size: 12.5px; font-weight: 600; }
+  .me-status { font-size: 11px; color: var(--ink-subtle); display: flex; align-items: center; gap: 5px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* ── Main column ── */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .toolbar {
+    height: 52px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 16px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .tb-title { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; }
+  .tb-week { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); }
+  .seg { display: flex; background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 7px; padding: 2px; margin-left: auto; }
+  .seg button {
+    border: 0; background: transparent; color: var(--ink-muted);
+    font: inherit; font-size: 12.5px; font-weight: 500;
+    padding: 4px 12px; border-radius: 5px; cursor: pointer;
+  }
+  .seg button.on { background: var(--surface-3); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  .btn-primary {
+    border: 0; cursor: pointer; font: inherit;
+    background: var(--accent); color: #fff;
+    font-size: 12.5px; font-weight: 600;
+    padding: 6px 14px; border-radius: 7px;
+    transition: background .12s;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  /* ── Week grid ── */
+  .grid-wrap { flex: 1; overflow: auto; padding: 0 20px 24px; }
+  .week-head {
+    display: grid; grid-template-columns: 52px repeat(7, 1fr);
+    position: sticky; top: 0; z-index: 2;
+    background: var(--canvas);
+    padding-top: 14px; padding-bottom: 8px;
+  }
+  .day-head { text-align: center; }
+  .day-name { font-size: 11px; font-weight: 600; color: var(--ink-subtle); text-transform: uppercase; letter-spacing: .06em; }
+  .day-num {
+    font-family: var(--mono); font-size: 13px; color: var(--ink-muted);
+    width: 26px; height: 26px; line-height: 26px; margin: 4px auto 0; border-radius: 50%;
+  }
+  .day-head.today .day-num { background: var(--accent); color: #fff; }
+  .day-head.today .day-name { color: var(--accent-hover); }
+
+  .grid { display: grid; grid-template-columns: 52px repeat(7, 1fr); position: relative; }
+  .gutter { position: relative; }
+  .gutter span {
+    position: absolute; right: 10px; transform: translateY(-50%);
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-subtle);
+  }
+  .col { border-left: 1px solid var(--hairline); position: relative; min-height: 840px; }
+  .col.today { background: rgba(94,106,210,.04); }
+  .hour-line { height: 60px; border-bottom: 1px solid var(--hairline); }
+  .col .half-line { position: absolute; left: 0; right: 0; border-bottom: 1px dashed var(--hairline); opacity: .55; }
+  .now-line { position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none; }
+  .now-line::before { content:''; position:absolute; left:-4px; top:-3.5px; width:8px; height:8px; border-radius:50%; background:var(--accent); }
+  .now-line::after { content:''; position:absolute; left:6px; right:0; top:-0.5px; height:1px; background:var(--accent); }
+
+  /* events */
+  .ev {
+    position: absolute; left: 3px; right: 5px;
+    border-radius: 6px; padding: 6px 8px;
+    font-size: 12px; overflow: hidden;
+    border-left: 3px solid transparent;
+    cursor: default;
+  }
+  .ev-time { font-family: var(--mono); font-size: 10px; opacity: .75; display: block; margin-top: 1px; }
+  .ev-work   { background: var(--st-available-bg); border-left-color: var(--st-available); color: #7ed49a; }
+  .ev-focus  { background: var(--st-focus-bg);     border-left-color: var(--st-focus);     color: #a5cdfb; }
+  .ev-meet   { background: var(--st-meeting-bg);   border-left-color: var(--st-meeting);   color: #f8c667; }
+  .ev-travel { background: var(--st-traveling-bg); border-left-color: var(--st-traveling); color: #cbb4f7; }
+  .ev-leave  { background: repeating-linear-gradient(-45deg, rgba(229,72,77,.14) 0 6px, rgba(229,72,77,.07) 6px 12px); border-left-color: var(--st-busy); color: #f2989b; }
+
+  .fab-hint { position: fixed; bottom: 22px; right: 22px; font-size: 11px; color: var(--ink-subtle);
+    background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 999px; padding: 6px 12px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="workspace">
+    <div class="ws-button">
+      <div class="ws-mark">K</div>
+      <div>
+        <div class="ws-name">Acme Inc</div>
+        <div class="ws-sub">Workspace</div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="#" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Calendar
+    </a>
+    <a href="a-team.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Team
+      <span style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-subtle)">8</span>
+    </a>
+    <a href="a-settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+  <div class="me">
+    <div class="avatar-fallback" style="background:linear-gradient(135deg,#464fb8,#6a76e0);display:grid;place-items:center;font-size:10px;font-weight:600;color:#fff">AK</div>
+    <div>
+      <div class="me-name">Amaan K.</div>
+      <div class="me-status"><span class="dot" style="background:var(--st-available)"></span>Available</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="toolbar">
+    <span class="tb-title">Calendar</span>
+    <span class="tb-week">Feb 10 – Feb 16, 2025</span>
+    <div class="seg">
+      <button>Day</button>
+      <button class="on">Week</button>
+      <button>Month</button>
+    </div>
+    <button class="btn-primary">＋ New event</button>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="week-head">
+      <span></span>
+      <div class="day-head"><div class="day-name">Mon</div><div class="day-num">10</div></div>
+      <div class="day-head"><div class="day-name">Tue</div><div class="day-num">11</div></div>
+      <div class="day-head"><div class="day-name">Wed</div><div class="day-num">12</div></div>
+      <div class="day-head today"><div class="day-name">Thu</div><div class="day-num">13</div></div>
+      <div class="day-head"><div class="day-name">Fri</div><div class="day-num">14</div></div>
+      <div class="day-head"><div class="day-name">Sat</div><div class="day-num">15</div></div>
+      <div class="day-head"><div class="day-name">Sun</div><div class="day-num">16</div></div>
+    </div>
+
+    <div class="grid" id="grid">
+      <!-- gutter -->
+      <div class="gutter" id="gutter"></div>
+      <!-- columns injected around static demo events below -->
+    </div>
+  </div>
+</main>
+
+<div class="fab-hint">⌘E quick event</div>
+
+<script>
+  // Build the hour gutter + 7 columns deterministically (prototype demo data)
+  const START = 7, END = 21, HOUR_H = 60;
+  const gutter = document.getElementById('gutter');
+  const grid = document.getElementById('grid');
+  for (let h = START; h <= END; h++) {
+    const s = document.createElement('span');
+    s.textContent = ((h % 12) || 12) + (h < 12 ? ' AM' : ' PM');
+    s.style.top = (h - START) * HOUR_H + 'px';
+    gutter.appendChild(s);
+  }
+  for (let c = 0; c < 7; c++) {
+    const col = document.createElement('div');
+    col.className = 'col' + (c === 3 ? ' today' : '');
+    for (let h = START; h < END; h++) {
+      const l = document.createElement('div'); l.className = 'hour-line'; col.appendChild(l);
+      const half = document.createElement('div'); half.className = 'half-line';
+      half.style.top = (h - START + 0.5) * HOUR_H + 'px'; col.appendChild(half);
+    }
+    if (c === 3) {
+      const now = document.createElement('div');
+      now.className = 'now-line';
+      now.style.top = (10.62 - START) * HOUR_H + 'px'; // 10:37
+      col.appendChild(now);
+      col.insertAdjacentHTML('beforeend', `
+        <div class="ev ev-focus"  style="top:${(9-START)*HOUR_H+2}px;height:${2*HOUR_H-4}px">Focus Time<span class="ev-time">9:00 – 11:00</span></div>
+        <div class="ev ev-meet"   style="top:${(13-START)*HOUR_H+2}px;height:${HOUR_H-4}px">Design sync<span class="ev-time">1:00 – 2:00 PM</span></div>`);
+    }
+    if (c === 0 || c === 2 || c === 4) {
+      col.insertAdjacentHTML('beforeend',
+        `<div class="ev ev-work" style="top:${(9-START)*HOUR_H+2}px;height:${8*HOUR_H-4}px">Working hours<span class="ev-time">9:00 – 5:00</span></div>`);
+    }
+    if (c === 5) {
+      col.insertAdjacentHTML('beforeend',
+        `<div class="ev ev-leave" style="top:${(9-START)*HOUR_H+2}px;height:${8*HOUR_H-4}px">Leave · Vacation<span class="ev-time">all day</span></div>`);
+    }
+    grid.appendChild(col);
+  }
+</script>
+</body>
+</html>

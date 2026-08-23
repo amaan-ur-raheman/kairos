@@ -29,6 +29,22 @@ const apiHandler = new OpenAPIHandler(appRouter, {
   ],
 });
 
+// ponytail: in-memory sliding window is per-serverless-isolate — it damps bursts but
+// isn't a global cap; add Vercel Firewall or Upstash Redis if abuse comes from many IPs
+const RATE_LIMIT = 120;
+const RATE_WINDOW_MS = 60_000;
+const hits = new Map<string, number[]>();
+
+function isRateLimited(req: Request): boolean {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const now = Date.now();
+  const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 10_000) hits.clear(); // bound memory; worst case limits reset early
+  return recent.length > RATE_LIMIT;
+}
+
 const app = new Elysia()
   .use(
     cors({
@@ -40,11 +56,24 @@ const app = new Elysia()
   .all(
     "/rpc*",
     async (context) => {
-      const { response } = await rpcHandler.handle(context.request, {
-        prefix: "/rpc",
-        context: await createContext({ context }),
-      });
-      return response ?? new Response("Not Found", { status: 404 });
+      try {
+        if (isRateLimited(context.request)) {
+          return Response.json({ error: "Too Many Requests" }, { status: 429 });
+        }
+        const ctx = await createContext({ context });
+        const { response } = await rpcHandler.handle(context.request, {
+          prefix: "/rpc",
+          context: ctx,
+        });
+        return response ?? new Response("Not Found", { status: 404 });
+      } catch (err) {
+        console.error("RPC handler error:", err);
+        return Response.json(
+          // Don't leak internal error details to clients
+          { error: "Internal Server Error" },
+          { status: 500 },
+        );
+      }
     },
     {
       parse: "none",
@@ -53,11 +82,21 @@ const app = new Elysia()
   .all(
     "/api-reference*",
     async (context) => {
-      const { response } = await apiHandler.handle(context.request, {
-        prefix: "/api-reference",
-        context: await createContext({ context }),
-      });
-      return response ?? new Response("Not Found", { status: 404 });
+      try {
+        const ctx = await createContext({ context });
+        const { response } = await apiHandler.handle(context.request, {
+          prefix: "/api-reference",
+          context: ctx,
+        });
+        return response ?? new Response("Not Found", { status: 404 });
+      } catch (err) {
+        console.error("OpenAPI handler error:", err);
+        return Response.json(
+          // Don't leak internal error details to clients
+          { error: "Internal Server Error" },
+          { status: 500 },
+        );
+      }
     },
     {
       parse: "none",

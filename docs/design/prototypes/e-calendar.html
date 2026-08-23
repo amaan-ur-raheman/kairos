@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Pop — Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Direction E "Pop" — bold colorful consumer ───────────────── */
+  :root {
+    --bg:#101210; --card:#191c19; --card-raised:#212521;
+    --line:#2a2f2a;
+    --ink:#fafdf7; --ink-muted:#9aa39a;
+    --lime:#a3e635; --lime-deep:#65a30d; --lime-glow:rgba(163,230,53,.3);
+    --st-available:#22c55e; --st-busy:#ef4444; --st-meeting:#eab308;
+    --st-focus:#38bdf8; --st-traveling:#a78bfa; --st-offline:#6b7280;
+    --display:'Inter Tight','Inter',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --r:18px;
+  }
+  * { margin:0;padding:0;box-sizing:border-box }
+  html { color-scheme:dark }
+  body { font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;height:100vh;overflow:hidden }
+
+  .topbar { height:64px;display:flex;align-items:center;gap:20px;padding:0 24px;border-bottom:1px solid var(--line) }
+  .logo { font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-0.03em;display:flex;align-items:center }
+  .logo-mark { width:30px;height:30px;border-radius:10px;background:var(--lime);color:#101210;display:grid;place-items:center;font-size:13px;margin-right:-6px;z-index:1;box-shadow:3px 3px 0 rgba(163,230,53,.25) }
+  .logo span { position:relative;padding-left:12px }
+  nav { display:flex;gap:6px }
+  nav a { color:var(--ink-muted);text-decoration:none;font-weight:600;font-size:13.5px;padding:8px 16px;border-radius:999px;transition:all .13s }
+  nav a:hover { color:var(--ink);background:var(--card) }
+  nav a.active { color:#101210;background:var(--lime) }
+  .right { margin-left:auto }
+  .btn-big { border:none;cursor:pointer;font-family:var(--display);font-weight:700;font-size:13.5px;color:#101210;
+    background:var(--lime);padding:11px 22px;border-radius:999px;box-shadow:0 3px 0 var(--lime-deep);transition:all .1s }
+  .btn-big:hover { transform:translateY(-1px);box-shadow:0 4px 0 var(--lime-deep),0 8px 24px var(--lime-glow) }
+  .btn-big:active { transform:translateY(2px);box-shadow:0 1px 0 var(--lime-deep) }
+
+  .page { max-width:1200px;margin:0 auto;padding:24px 24px 40px;height:calc(100vh - 65px);overflow:auto }
+  .head-row{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  h1{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-0.03em}
+  .week-label{font-family:var(--mono);font-size:12px;color:var(--ink-muted)}
+  .seg{margin-left:auto;display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .seg button{border:0;background:transparent;font-family:var(--display);font-weight:700;font-size:12.5px;color:var(--ink-muted);padding:7px 16px;border-radius:999px;cursor:pointer}
+  .seg button.on{background:var(--card-raised);color:var(--lime);border:1px solid var(--line)}
+
+  .week-head{display:grid;grid-template-columns:52px repeat(7,1fr);padding-bottom:10px}
+  .day-head{text-align:center}
+  .day-name{font-family:var(--display);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-muted)}
+  .day-num{font-family:var(--mono);font-size:13px;width:29px;height:29px;line-height:29px;margin:5px auto 0;border-radius:999px;color:var(--ink-muted)}
+  .day-head.today .day-num{background:var(--lime);color:#101210;font-weight:500}
+
+  .grid{display:grid;grid-template-columns:52px repeat(7,1fr)}
+  .gutter span{position:absolute;right:10px;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:#4d554d}
+  .gutter{position:relative}
+  .col{border-left:1px solid var(--line);position:relative;min-height:820px}
+  .col.today{background:rgba(163,230,53,.05);outline:1.5px dashed rgba(163,230,53,.35);outline-offset:-3px;border-radius:12px}
+  .hour-line{height:60px;border-bottom:1px solid #1c201c}
+  .now-line{position:absolute;left:0;right:0;z-index:1}
+  .now-line::before{content:'';position:absolute;left:-5px;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime-glow)}
+  .now-line::after{content:'';position:absolute;left:7px;right:0;top:-.5px;height:2px;background:var(--lime)}
+
+  .ev{position:absolute;left:5px;right:7px;border-radius:14px;padding:8px 11px;font-size:12.5px;overflow:hidden;font-weight:500}
+  .ev b{font-family:var(--display);font-weight:700;display:block;letter-spacing:-0.01em}
+  .ev-time{font-family:var(--mono);font-size:9.5px;opacity:.7;display:block;margin-top:2px}
+  .ev-work  {background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+  .ev-focus {background:rgba(56,189,248,.14);color:#7dd3fc;border:1px solid rgba(56,189,248,.3)}
+  .ev-meet  {background:rgba(234,179,8,.13);color:#fde047;border:1px solid rgba(234,179,8,.3)}
+  .ev-leave {background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><div class="logo-mark">K</div><span>kairos</span></div>
+  <nav>
+    <a href="#" class="active">Calendar</a>
+    <a href="e-team.html">Team</a>
+    <a href="e-settings.html">Settings</a>
+  </nav>
+  <div class="right"><button class="btn-big">＋ New event</button></div>
+</header>
+
+<div class="page">
+  <div class="head-row">
+    <h1>Calendar</h1>
+    <span class="week-label">FEB 10 – 16</span>
+    <div class="seg"><button>Day</button><button class="on">Week</button><button>Month</button></div>
+  </div>
+  <div class="week-head" id="wh"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+  const START=7,END=21,HH=60,DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],NUMS=[10,11,12,13,14,15,16];
+  document.getElementById('wh').innerHTML='<span></span>'+DAYS.map((d,i)=>
+    `<div class="day-head${i===3?' today':''}"><div class="day-name">${d}</div><div class="day-num">${NUMS[i]}</div></div>`).join('');
+  const g=document.createElement('div');g.className='gutter';
+  for(let h=START;h<=END;h++){const s=document.createElement('span');s.textContent=((h%12)||12)+(h<12?' AM':' PM');s.style.top=(h-START)*HH+'px';g.appendChild(s);}
+  document.getElementById('grid').appendChild(g);
+  for(let c=0;c<7;c++){
+    const col=document.createElement('div');col.className='col'+(c===3?' today':'');
+    for(let h=START;h<END;h++)col.insertAdjacentHTML('beforeend','<div class="hour-line"></div>');
+    if(c===3){
+      const now=document.createElement('div');now.className='now-line';now.style.top=(10.62-START)*HH+'px';col.appendChild(now);
+      col.insertAdjacentHTML('beforeend',`
+        <div class="ev ev-focus" style="top:${(9-START)*HH+3}px;height:${2*HH-6}px"><b>Focus Time</b><span class="ev-time">9:00 – 11:00</span></div>
+        <div class="ev ev-meet" style="top:${(13-START)*HH+3}px;height:${HH-6}px"><b>Design sync</b><span class="ev-time">1:00 – 2:00 PM</span></div>`);
+    }
+    if([0,2,4].includes(c))col.insertAdjacentHTML('beforeend',
+      `<div class="ev ev-work" style="top:${(9-START)*HH+3}px;height:${8*HH-6}px"><b>Working hours</b><span class="ev-time">9:00 – 5:00</span></div>`);
+    if(c===5)col.insertAdjacentHTML('beforeend',
+      `<div class="ev ev-leave" style="top:${(9-START)*HH+3}px;height:${8*HH-6}px"><b>Leave · Vacation</b><span class="ev-time">all day</span></div>`);
+    document.getElementById('grid').appendChild(col);
+  }
+</script>
+</body>
+</html>
