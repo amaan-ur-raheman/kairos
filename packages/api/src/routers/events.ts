@@ -2,7 +2,7 @@ import { db } from "@kairos/db";
 import { calendarEvents } from "@kairos/db/schema/calendar-events";
 import { members } from "@kairos/db/schema/members";
 import { ORPCError } from "@orpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, ne, or } from "drizzle-orm";
 import z from "zod";
 import { orgProcedure } from "../index";
 
@@ -24,17 +24,51 @@ const eventFields = {
 };
 
 export const eventsRouter = {
-  /** The authenticated member's own calendar events. */
-  list: orgProcedure.handler(async ({ context }) => {
-    return db
-      .select()
-      .from(calendarEvents)
-      .where(eq(calendarEvents.memberId, context.auth!.memberId!));
-  }),
+  /**
+   * The authenticated member's own calendar events.
+   * Optional `{ from, to }` (ISO datetime) narrows the result to events that
+   * can overlap the window — non-recurring by start/end, recurring series by
+   * their `until` bound (series with no bound are always included).
+   */
+  list: orgProcedure
+    .input(
+      z
+        .object({
+          from: z.string().datetime(),
+          to: z.string().datetime(),
+        })
+        .optional(),
+    )
+    .handler(async ({ input, context }) => {
+      const conditions = [eq(calendarEvents.memberId, context.auth!.memberId!)];
+      if (input?.from && input?.to) {
+        conditions.push(
+          lte(calendarEvents.startTime, new Date(input.to)),
+          or(
+            ne(calendarEvents.recurrence, "none"),
+            gte(calendarEvents.endTime, new Date(input.from)),
+          )!,
+          or(
+            isNull(calendarEvents.recurrenceUntil),
+            gte(calendarEvents.recurrenceUntil, new Date(input.from)),
+          )!,
+        );
+      }
+      return db
+        .select()
+        .from(calendarEvents)
+        .where(and(...conditions));
+    }),
 
   /** Any member's events in the same org (for member schedule view). */
   listForMember: orgProcedure
-    .input(z.object({ memberId: z.string() }))
+    .input(
+      z.object({
+        memberId: z.string(),
+        from: z.string().datetime().optional(),
+        to: z.string().datetime().optional(),
+      }),
+    )
     .handler(async ({ input, context }) => {
       // Verify target is in same org
       const target = await db
@@ -45,7 +79,24 @@ export const eventsRouter = {
       if (!target[0] || target[0].orgId !== context.auth!.organizationId) {
         throw new ORPCError("NOT_FOUND", { message: "Member not found" });
       }
-      return db.select().from(calendarEvents).where(eq(calendarEvents.memberId, input.memberId));
+      const conditions = [eq(calendarEvents.memberId, input.memberId)];
+      if (input.from && input.to) {
+        conditions.push(
+          lte(calendarEvents.startTime, new Date(input.to)),
+          or(
+            ne(calendarEvents.recurrence, "none"),
+            gte(calendarEvents.endTime, new Date(input.from)),
+          )!,
+          or(
+            isNull(calendarEvents.recurrenceUntil),
+            gte(calendarEvents.recurrenceUntil, new Date(input.from)),
+          )!,
+        );
+      }
+      return db
+        .select()
+        .from(calendarEvents)
+        .where(and(...conditions));
     }),
 
   create: orgProcedure.input(z.object(eventFields)).handler(async ({ input, context }) => {
