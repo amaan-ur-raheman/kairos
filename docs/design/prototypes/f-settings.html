@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Mono — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fff; --line:#eaeaea; --fg:#000; --fg-muted:#666; --fg-faint:#a3a3a3;
+    --st-available:#16a34a; --st-busy:#dc2626; --st-meeting:#ca8a04;
+    --st-focus:#2563eb; --st-traveling:#7c3aed; --st-offline:#a3a3a3;
+    --mono:'JetBrains Mono',monospace;
+  }
+  * { margin:0;padding:0;box-sizing:border-box }
+  body { font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);font-size:13.5px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden }
+  .topbar { height:56px;flex-shrink:0;display:flex;align-items:center;gap:24px;padding:0 28px;border-bottom:1px solid var(--line) }
+  .logo { font-weight:600;font-size:14px;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px }
+  .logo-mark { width:8px;height:8px;background:var(--fg);border-radius:2px }
+  nav { display:flex;gap:20px }
+  nav a { color:var(--fg-muted);text-decoration:none;font-size:13px;font-weight:450 }
+  nav a.active { color:var(--fg);font-weight:600;border-bottom:1px solid var(--fg);padding-bottom:19px;margin-bottom:-19px }
+
+  .page { max-width:600px;width:100%;margin:0 auto;padding:36px 28px 80px;flex:1;overflow:auto }
+  h1 { font-size:17px;font-weight:600;letter-spacing:-0.02em;margin-bottom:26px }
+
+  .profile { display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:8px }
+  .avatar-lg{width:42px;height:42px;border-radius:6px;background:var(--fg);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:13px}
+  .profile b{display:block;font-size:13.5px;font-weight:600}
+  .profile span{font-size:12.5px;color:var(--fg-muted);display:block;margin-top:1px}
+  .role-tag{margin-left:auto;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--fg-muted);border:1px solid var(--line);border-radius:4px;padding:4px 9px}
+
+  .section-label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--fg-faint);margin:30px 0 12px}
+
+  .status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .st-btn{display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid var(--line);border-radius:7px;
+    background:#fff;font:inherit;font-size:13px;color:var(--fg-muted);cursor:pointer;transition:border-color .1s}
+  .st-btn i{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .st-btn:hover{border-color:var(--fg-muted)}
+  .st-btn.on{border-color:var(--fg);box-shadow:inset 0 0 0 .5px var(--fg);color:var(--fg);font-weight:500}
+
+  .note-input{margin-top:8px;width:100%;border:1px solid var(--line);border-radius:7px;
+    font:inherit;font-size:13px;padding:10px 13px;outline:none;color:var(--fg)}
+  .note-input:focus{border-color:var(--fg)}
+  .expiry-row{display:flex;justify-content:space-between;margin-top:10px;font-size:12.5px;color:var(--fg-muted)}
+
+  .hours{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .hrow{display:flex;align-items:center;gap:15px;padding:10px 15px;border-bottom:1px solid #f5f5f5}
+  .hrow:last-child{border-bottom:0}
+  .hday{width:38px;font-family:var(--mono);font-size:11px;text-transform:uppercase;color:var(--fg-muted)}
+  .switch{width:32px;height:18px;border-radius:999px;background:#e5e5e5;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
+  .switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s}
+  .switch.on{background:var(--fg)}
+  .switch.on::after{left:16px}
+  .time-box{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer;color:var(--fg)}
+  .sep{color:var(--fg-faint);font-size:11px}
+  .off-label{font-size:12.5px;color:var(--fg-faint)}
+  .hrow.off{opacity:.45}
+
+  .save-bar{position:sticky;bottom:0;margin-top:28px;padding:14px 0;background:linear-gradient(transparent,#fff 45%);
+    display:flex;justify-content:flex-end;gap:10px;align-items:center}
+  .save-hint{font-family:var(--mono);font-size:10px;color:var(--fg-faint);margin-right:auto;text-transform:uppercase;letter-spacing:.08em}
+  .btn{background:var(--fg);color:#fff;border:none;cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;padding:8px 18px;border-radius:6px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark"></span>kairos</div>
+  <nav>
+    <a href="f-calendar.html">Calendar</a>
+    <a href="f-team.html">Team</a>
+    <a href="#" class="active">Settings</a>
+  </nav>
+</header>
+
+<div class="page">
+  <h1>Settings</h1>
+
+  <div class="profile">
+    <div class="avatar-lg">AK</div>
+    <div><b>Amaan Khan</b><span>amaan@acme.com · Backend Engineer · UTC+04:00 Dubai</span></div>
+    <span class="role-tag">owner</span>
+  </div>
+
+  <div class="section-label">Status</div>
+  <div class="status-grid">
+    <button class="st-btn on"><i style="background:var(--st-available)"></i>Available</button>
+    <button class="st-btn"><i style="background:var(--st-busy)"></i>Busy</button>
+    <button class="st-btn"><i style="background:var(--st-meeting)"></i>In a Meeting</button>
+    <button class="st-btn"><i style="background:var(--st-focus)"></i>Focus Time</button>
+    <button class="st-btn"><i style="background:var(--st-traveling)"></i>Traveling</button>
+    <button class="st-btn"><i style="background:var(--st-offline)"></i>Offline</button>
+  </div>
+  <input class="note-input" value="Heads-down until standup" placeholder="Add a note (optional)">
+  <div class="expiry-row">
+    <label><input type="checkbox" checked> Clear automatically</label>
+    <span style="font-family:var(--mono);font-size:11px">TODAY · 17:00 ▾</span>
+  </div>
+
+  <div class="section-label">Working hours</div>
+  <div class="hours">
+    <div class="hrow off"><span class="hday">Sun</span><div class="switch"></div><span class="off-label">Day off</span></div>
+    <div class="hrow"><span class="hday">Mon</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+    <div class="hrow"><span class="hday">Tue</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+    <div class="hrow"><span class="hday">Wed</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+    <div class="hrow"><span class="hday">Thu</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+    <div class="hrow"><span class="hday">Fri</span><div class="switch on"></div><span class="time-box">09:00</span><span class="sep">to</span><span class="time-box">17:00</span></div>
+    <div class="hrow off"><span class="hday">Sat</span><div class="switch"></div><span class="off-label">Day off</span></div>
+  </div>
+
+  <div class="save-bar">
+    <span class="save-hint">Applies to team view after save</span>
+    <button class="btn">Save changes</button>
+  </div>
+</div>
+</body>
+</html>

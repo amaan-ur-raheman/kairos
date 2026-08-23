@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Ember States</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  /* ── Ember · interaction states reference — loading / empty / error ── */
+  :root {
+    --paper:#faf7f2; --paper-deep:#f3efe6; --card:#fffdf9;
+    --line:#e8e2d6; --line-strong:#d8d0c0;
+    --ink:#2b2620; --ink-body:#57503f; --ink-muted:#6f6754;
+    --ember:#c2410c; --ember-deep:#9a3412; --ember-soft:#fbe9dd;
+    --st-available:#3f9142;
+    --serif:'Source Serif 4',Georgia,serif; --sans:'Inter',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --r-sm:8px; --r-md:12px; --r-pill:999px; --ease-out:cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  * { margin:0;padding:0;box-sizing:border-box }
+  :focus-visible { outline:2px solid var(--ember); outline-offset:2px; border-radius:4px }
+  @media (prefers-reduced-motion: reduce){ .skeleton{animation:none} }
+  body { font-family:var(--sans); background:var(--paper); color:var(--ink); font-size:13.5px; line-height:1.5 }
+
+  .page { max-width:760px; margin:0 auto; padding:40px 28px 80px }
+  h1 { font-family:var(--serif); font-weight:600; font-size:28px; letter-spacing:-0.01em }
+  .sub { color:var(--ink-muted); margin:4px 0 8px }
+  .note { font-size:12.5px; color:var(--ink-muted); font-style:italic; font-family:var(--serif); margin-bottom:34px }
+
+  .case { margin-bottom:44px }
+  .case-label { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:var(--ink-muted);
+    padding-bottom:8px; margin-bottom:12px; border-bottom:1px solid var(--line-strong) }
+  .case-label b { color:var(--ember); font-weight:500 }
+
+  .frame { background:var(--card); border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden }
+
+  /* ── loading: skeleton rows ── */
+  .sk-row { display:flex; align-items:center; gap:13px; padding:14px 16px; border-bottom:1px solid #efeae0 }
+  .sk-row:last-child{border-bottom:0}
+  .sk-avatar { width:36px;height:36px;border-radius:50%;flex-shrink:0 }
+  .sk-lines { flex:1 }
+  .sk-line { height:10px;border-radius:var(--r-sm);margin-bottom:7px }
+  .sk-line:last-child{margin-bottom:0;width:55%}
+  .skeleton { background:linear-gradient(90deg,var(--paper-deep) 25%,#ebe5d8 50%,var(--paper-deep) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s ease-in-out infinite }
+  @keyframes shimmer { from{background-position:200% 0} to{background-position:-200% 0} }
+  .loading-note { display:flex; align-items:center; gap:8px; padding:10px 16px; font-family:var(--mono); font-size:10px;
+    text-transform:uppercase; letter-spacing:.12em; color:var(--ink-muted); border-top:1px solid #efeae0 }
+
+  /* ── empty state ── */
+  .empty { text-align:center; padding:52px 32px }
+  .empty-glyph {
+    width:44px;height:44px;margin:0 auto 16px;border-radius:50%;
+    border:1.5px dashed var(--line-strong); position:relative;
+  }
+  .empty-glyph::after{content:'';position:absolute;inset:12px;border-radius:50%;background:var(--paper-deep)}
+  .empty h3 { font-family:var(--serif); font-style:normal; font-weight:600; font-size:17px }
+  .empty p { color:var(--ink-muted); font-size:13px; max-width:34ch; margin:5px auto 16px }
+  .empty a { color:var(--ember); font-weight:600; text-decoration:none; font-size:13px }
+
+  /* ── error row + save error ── */
+  .error-strip {
+    display:flex; align-items:center; gap:11px;
+    margin:12px 16px 14px; padding:10px 14px;
+    border:1px solid #e5c4bd; background:#faeceb; border-radius:var(--r-sm);
+    font-size:12.5px; color:#8f2d28;
+  }
+  .error-strip b { font-weight:600 }
+  .error-strip button { margin-left:auto; background:none; border:none; font:inherit; font-size:12.5px;
+    font-weight:600; color:var(--ember); cursor:pointer; padding:0 }
+  .error-strip button:active { transform:scale(0.97) }
+  .retry:active { transform:scale(0.97) }
+  .save-bar-err { transition:opacity 200ms var(--ease-out) }
+  @starting-style { .save-bar-err { opacity:0 } }
+
+  .save-bar-err {
+    margin-top:20px; display:flex; align-items:center; gap:12px;
+    background:var(--ink); color:var(--paper); border-radius:var(--r-pill); padding:10px 12px 10px 22px;
+  }
+  .save-bar-err .msg { font-family:var(--serif); font-style:italic; font-size:13px; color:#f3b8ad }
+  .save-bar-err .retry { margin-left:auto; background:var(--ember); color:#fff; border:none; cursor:pointer;
+    font:inherit; font-size:12.5px; font-weight:600; padding:8px 18px; border-radius:var(--r-pill) }
+
+  @media (hover: hover) and (pointer: fine) {
+    .empty a:hover { text-decoration:underline }
+    .error-strip button:hover { text-decoration:underline }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>Interaction states</h1>
+  <p class="sub">The three states every screen must ship besides "populated". Ember-styled.</p>
+  <p class="note">Reference sheet. These patterns apply to Calendar, Team, and Settings in the final build.</p>
+
+  <!-- ══ LOADING ══ -->
+  <div class="case">
+    <div class="case-label"><b>Loading</b> · Team list, first paint. Skeleton matches final layout shape</div>
+    <div class="frame" role="status" aria-label="Loading team members">
+      <div class="sk-row"><span class="sk-avatar skeleton"></span>
+        <div class="sk-lines"><div class="sk-line skeleton" style="width:38%"></div><div class="sk-line skeleton"></div></div></div>
+      <div class="sk-row"><span class="sk-avatar skeleton"></span>
+        <div class="sk-lines"><div class="sk-line skeleton" style="width:30%"></div><div class="sk-line skeleton"></div></div></div>
+      <div class="sk-row"><span class="sk-avatar skeleton"></span>
+        <div class="sk-lines"><div class="sk-line skeleton" style="width:44%"></div><div class="sk-line skeleton"></div></div></div>
+      <div class="loading-note">Fetching your team…</div>
+    </div>
+  </div>
+
+  <!-- ══ EMPTY ══ -->
+  <div class="case">
+    <div class="case-label"><b>Empty</b> · Team with no members yet / calendar with no events</div>
+    <div class="frame">
+      <div class="empty">
+        <div class="empty-glyph" aria-hidden="true"></div>
+        <h3>Nobody here yet</h3>
+        <p>Invite teammates and their status will show up on this page automatically.</p>
+        <a href="#">Invite your first teammate →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ERROR ══ -->
+  <div class="case">
+    <div class="case-label"><b>Error</b> · Query failure, inline retry (never a dead end)</div>
+    <div class="frame">
+      <div class="error-strip" role="alert">
+        <span>⚠</span>
+        <span><b>Couldn't load the team.</b> Check your connection and try again.</span>
+        <button>Retry</button>
+      </div>
+      <div style="padding:2px 16px 16px;color:var(--ink-muted);font-size:12.5px">
+        Cached rows stay visible underneath the strip when we have them.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SAVE ERROR ══ -->
+  <div class="case">
+    <div class="case-label"><b>Mutation error</b> · Settings save-bar, failed write</div>
+    <div class="save-bar-err" role="alert">
+      <span class="msg">Saving failed. Nothing was changed.</span>
+      <button class="retry">Try again</button>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

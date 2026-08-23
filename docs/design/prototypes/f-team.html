@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Mono — Team</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fff; --line:#eaeaea; --fg:#000; --fg-muted:#666; --fg-faint:#a3a3a3;
+    --st-available:#16a34a; --st-busy:#dc2626; --st-meeting:#ca8a04;
+    --st-focus:#2563eb; --st-traveling:#7c3aed; --st-offline:#a3a3a3;
+    --mono:'JetBrains Mono',monospace;
+  }
+  * { margin:0;padding:0;box-sizing:border-box }
+  body { font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);font-size:13.5px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden }
+  .topbar { height:56px;flex-shrink:0;display:flex;align-items:center;gap:24px;padding:0 28px;border-bottom:1px solid var(--line) }
+  .logo { font-weight:600;font-size:14px;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px }
+  .logo-mark { width:8px;height:8px;background:var(--fg);border-radius:2px }
+  nav { display:flex;gap:20px }
+  nav a { color:var(--fg-muted);text-decoration:none;font-size:13px;font-weight:450 }
+  nav a.active { color:var(--fg);font-weight:600;border-bottom:1px solid var(--fg);padding-bottom:19px;margin-bottom:-19px }
+
+  .page { max-width:900px;width:100%;margin:0 auto;padding:32px 28px 64px;flex:1;overflow:auto }
+  h1 { font-size:17px;font-weight:600;letter-spacing:-0.02em }
+  .sub { font-family:var(--mono);font-size:11px;color:var(--fg-faint);margin-top:4px }
+
+  table { width:100%;border-collapse:collapse;margin-top:24px }
+  th { text-align:left;font-family:var(--mono);font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--fg-faint);padding:8px 10px;border-bottom:1px solid var(--line) }
+  td { padding:11px 10px;border-bottom:1px solid #f5f5f5;vertical-align:middle }
+  tr:hover td { background:var(--bg-sub, #fafafa);background:#fafafa }
+
+  .cell-person{display:flex;align-items:center;gap:11px}
+  .avatar{position:relative;width:30px;height:30px;border-radius:6px;background:#f0f0f0;color:var(--fg);
+    display:grid;place-items:center;font-family:var(--mono);font-size:10.5px;font-weight:500;flex-shrink:0}
+  .p-name{font-weight:600;font-size:13px}
+  .p-role{font-size:12px;color:var(--fg-muted)}
+  .status-cell{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em}
+  .status-cell i{width:7px;height:7px;border-radius:50%}
+  .note-cell{font-size:12px;color:var(--fg-muted)}
+  .tz-cell{font-family:var(--mono);font-size:10.5px;color:var(--fg-muted)}
+
+  .count-line{display:flex;gap:28px;padding:18px 0 4px;font-family:var(--mono);font-size:11px;color:var(--fg-muted)}
+  .count-line b{color:var(--fg);font-weight:500}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark"></span>kairos</div>
+  <nav>
+    <a href="f-calendar.html">Calendar</a>
+    <a href="#" class="active">Team</a>
+    <a href="f-settings.html">Settings</a>
+  </nav>
+</header>
+
+<div class="page">
+  <h1>Team</h1>
+  <p class="sub">LIVE STATUS — SORTED BY AVAILABILITY · ACME INC</p>
+
+  <div class="count-line">
+    <span><b>04</b> available</span>
+    <span><b>08</b> members</span>
+    <span><b>02</b> focused / meeting</span>
+    <span><b>02</b> away</span>
+  </div>
+
+  <table>
+    <thead><tr><th style="width:34%">MEMBER</th><th style="width:22%">STATUS</th><th style="width:26%">NOTE</th><th>LOCAL TIME</th></tr></thead>
+    <tbody>
+      <tr><td><div class="cell-person"><div class="avatar">AK</div><div><div class="p-name">Amaan Khan</div><div class="p-role">Backend Engineer</div></div></div></td>
+        <td><span class="status-cell"><i style="background:var(--st-available)"></i>Available</span></td><td></td><td class="tz-cell">13:37 UTC+4</td></tr>
+      <tr><td><div class="cell-person"><div class="avatar">MR</div><div><div class="p-name">Maria Ruiz</div><div class="p-role">Product Designer</div></div></div></td>
+        <td><span class="status-cell"><i style="background:var(--st-focus)"></i>Focus Time</span></td><td class="note-cell">until 11:00 AM</td><td class="tz-cell">09:37 UTC+1</td></tr>
+      <tr><td><div class="cell-person"><div class="avatar">JO</div><div><div class="p-name">James Okafor</div><div class="p-role">Frontend Engineer</div></div></div></td>
+        <td><span class="status-cell"><i style="background:var(--st-meeting)"></i>In Meeting</span></td><td></td><td class="tz-cell">09:37 UTC+0</td></tr>
+      <tr><td><div class="cell-person"><div class="avatar">PS</div><div><div class="p-name">Priya Sharma</div><div class="p-role">Eng Manager</div></div></div></td>
+        <td><span class="status-cell"><i style="background:var(--st-busy)"></i>Busy</span></td><td></td><td class="tz-cell">15:07 UTC+5.5</td></tr>
+      <tr><td><div class="cell-person"><div class="avatar">TL</div><div><div class="p-name">Tomás Lima</div><div class="p-role">Data Engineer</div></div></div></td>
+        <td><span class="status-cell"><i style="background:var(--st-available)"></i>Available</span></td><td class="note-cell">dentist till noon</td><td class="tz-cell">10:37 UTC−3</td></tr>
+      <tr><td><div class="cell-person"><div class="avatar">EC</div><div><div class="p-name">Elena Costa</div><div class="p-role">QA Engineer</div></div></div></td>
+        <td><span class="status-cell"><i style="background:var(--st-traveling)"></i>Traveling</span></td><td></td><td class="tz-cell">11:37 UTC+2</td></tr>
+      <tr><td><div class="cell-person"><div class="avatar">DN</div><div><div class="p-name">Dan Nilsson</div><div class="p-role">DevOps</div></div></div></td>
+        <td><span class="status-cell"><i style="background:var(--st-offline)"></i>Offline</span></td><td class="note-cell">leave until Feb 17</td><td class="tz-cell">10:37 UTC+1</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

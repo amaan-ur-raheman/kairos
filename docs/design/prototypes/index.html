@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos UI Redesign — Prototype Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f6f6f7; color:#17181a; min-height:100vh; }
+  .wrap { max-width:980px; margin:0 auto; padding:56px 28px 80px; }
+  h1 { font-family:'Inter Tight',sans-serif; font-size:34px; font-weight:600; letter-spacing:-0.03em; }
+  .lead { color:#5b5e64; margin-top:8px; max-width:64ch; line-height:1.55; }
+
+  .direction { background:#fff; border:1px solid #e6e7ea; border-radius:14px; margin-top:32px; overflow:hidden; }
+  .dir-head { display:flex; align-items:center; gap:14px; padding:20px 26px; border-bottom:1px solid #e6e7ea; flex-wrap:wrap; }
+  .swatch-stack { display:flex; }
+  .swatch { width:22px; height:22px; border-radius:50%; border:2px solid #fff; margin-left:-7px; }
+  .swatch:first-child { margin-left:0; }
+  .dir-head b { font-size:15.5px; font-weight:600; letter-spacing:-0.01em; display:block; }
+  .dir-head p { font-size:12.5px; color:#5b5e64; margin-top:1px; }
+  .tagline { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:#a3a6ac; border:1px solid #e6e7ea; border-radius:999px; padding:4px 11px; }
+  .dir-body { padding:18px 26px 24px; }
+  .links { display:flex; gap:9px; flex-wrap:wrap; }
+  .proto-link { text-decoration:none; font-size:13px; font-weight:500; border:1px solid #dcdde1; border-radius:10px;
+    padding:10px 17px; transition:all .12s; }
+  .proto-link:hover { border-color:#17181a; transform:translateY(-1px); box-shadow:0 3px 10px rgba(17,17,17,.07); }
+  .notes { font-size:12.5px; color:#5b5e64; line-height:1.65; margin-top:14px; padding-left:16px; }
+  .notes li { margin-bottom:4px; }
+  .notes li::marker { color:#c3c6cb; }
+
+  footer { margin-top:40px; font-size:12.5px; color:#8b8e95; line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Kairos UI redesign — prototypes</h1>
+  <p class="lead">
+    Six directions, three core screens each (Calendar · Team · Settings).
+    Status colors are identical in all of them — they're product data, not decoration.
+    Pick one (or mix elements), then it becomes the real theme across web and mobile.
+  </p>
+
+  <section class="direction" style="background:#141518;border-color:#232529;color:#f7f8f8">
+    <div class="dir-head" style="border-color:#232529">
+      <div class="swatch-stack"><span class="swatch" style="background:#0e0e11"></span><span class="swatch" style="background:#191a1e"></span><span class="swatch" style="background:#5e6ad2"></span></div>
+      <div><b>A · "Midnight"</b><p style="color:#9ca0a8">Linear-inspired dark · hairline panels, lavender accent, mono times, sidebar shell</p></div>
+      <span class="tagline" style="color:#8a8f98;border-color:#33353b">dark · precise</span>
+    </div>
+    <div class="dir-body">
+      <div class="links">
+        <a class="proto-link" style="color:#f7f8f8;border-color:#33353b" href="a-calendar.html">Calendar →</a>
+        <a class="proto-link" style="color:#f7f8f8;border-color:#33353b" href="a-team.html">Team →</a>
+        <a class="proto-link" style="color:#f7f8f8;border-color:#33353b" href="a-settings.html">Settings →</a>
+      </div>
+      <ul class="notes" style="color:#9ca0a8"><li>Instrument-panel feel: JetBrains Mono everywhere time appears; today's column washed in lavender.</li></ul>
+    </div>
+  </section>
+
+  <section class="direction">
+    <div class="dir-head">
+      <div class="swatch-stack"><span class="swatch" style="background:#fff;border-color:#e6e7ea"></span><span class="swatch" style="background:#f4f4f5"></span><span class="swatch" style="background:#111"></span></div>
+      <div><b>B · "Paper"</b><p>Cal.com-inspired light · white canvas, black CTAs, warm hairlines, top-nav shell</p></div>
+      <span class="tagline">light · calm</span>
+    </div>
+    <div class="dir-body">
+      <div class="links">
+        <a class="proto-link" href="b-calendar.html">Calendar →</a>
+        <a class="proto-link" href="b-team.html">Team →</a>
+        <a class="proto-link" href="b-settings.html">Settings →</a>
+      </div>
+      <ul class="notes"><li>Black is the only accent; the Team page uses a plain typographic summary strip + table instead of cards.</li></ul>
+    </div>
+  </section>
+
+  <section class="direction" style="background:#12102a;border-color:#3f3a52;color:#f2f1fb">
+    <div class="dir-head" style="border-color:#3f3a52">
+      <div class="swatch-stack"><span class="swatch" style="background:#0b0a14"></span><span class="swatch" style="background:#8b7cf6"></span><span class="swatch" style="background:#5bc0f8"></span></div>
+      <div><b>C · "Aurora"</b><p style="color:#a5a3c2">Superhuman/Raycast-inspired · deep indigo sky gradients, frosted glass panels, glowing violet pills</p></div>
+      <span class="tagline" style="color:#bcbac9;border-color:#3f3a52">dark · glassy · premium</span>
+    </div>
+    <div class="dir-body">
+      <div class="links">
+        <a class="proto-link" style="color:#f2f1fb;border-color:#5a5772" href="c-calendar.html">Calendar →</a>
+        <a class="proto-link" style="color:#f2f1fb;border-color:#5a5772" href="c-team.html">Team →</a>
+        <a class="proto-link" style="color:#f2f1fb;border-color:#5a5772" href="c-settings.html">Settings →</a>
+      </div>
+      <ul class="notes" style="color:#a5a3c2"><li>Everything floats in a blurred glass card over an atmospheric violet→sky backdrop; gradient pill buttons with soft glow.</li></ul>
+    </div>
+  </section>
+
+  <section class="direction">
+    <div class="dir-head">
+      <div class="swatch-stack"><span class="swatch" style="background:#faf7f2;border-color:#e8e2d6"></span><span class="swatch" style="background:#c2410c"></span><span class="swatch" style="background:#2b2620"></span></div>
+      <div><b>D · "Ember" — v2 layouts</b><p>Notion/Things-inspired warm editorial · cream paper, ember accent, serif headings, split-screen auth</p></div>
+      <span class="tagline">warm · editorial</span>
+    </div>
+    <div class="dir-body">
+      <div class="links">
+        <a class="proto-link" href="d-calendar.html">Calendar →</a>
+        <a class="proto-link" href="d-team.html">Team →</a>
+        <a class="proto-link" href="d-settings.html">Settings →</a>
+        <a class="proto-link" style="border-color:#c2410c;color:#c2410c;font-weight:600" href="d-sign-in.html">Sign in →</a>
+        <a class="proto-link" style="border-color:#c2410c;color:#c2410c;font-weight:600" href="d-sign-up.html">Sign up →</a>
+        <a class="proto-link" href="d-states.html">States →</a>
+      </div>
+      <ul class="notes">
+        <li><b>v2 layouts:</b> Calendar gains a “Today” rail (date, your status, next-up, team pulse) beside the week grid.</li>
+        <li>Team becomes an editorial page: serif headline “Who's around?”, featured Available-now cards + compact focused/away table.</li>
+        <li>Settings is now two-pane with a sticky section rail; Auth is a split-screen brand panel + form (sign-in & sign-up).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="direction" style="background:#101210;border-color:#2a2f2a;color:#fafdf7">
+    <div class="dir-head" style="border-color:#2a2f2a">
+      <div class="swatch-stack"><span class="swatch" style="background:#101210"></span><span class="swatch" style="background:#191c19"></span><span class="swatch" style="background:#a3e635"></span></div>
+      <div><b>E · "Pop"</b><p style="color:#9aa39a">Spotify/Duolingo energy · near-black canvas, electric lime accent, chunky type, pill buttons with hard shadows</p></div>
+      <span class="tagline" style="color:#9aa39a;border-color:#3a423a">dark · bold · playful</span>
+    </div>
+    <div class="dir-body">
+      <div class="links">
+        <a class="proto-link" style="color:#fafdf7;border-color:#3a423a" href="e-calendar.html">Calendar →</a>
+        <a class="proto-link" style="color:#fafdf7;border-color:#3a423a" href="e-team.html">Team →</a>
+        <a class="proto-link" style="color:#fafdf7;border-color:#3a423a" href="e-settings.html">Settings →</a>
+      </div>
+      <ul class="notes" style="color:#9aa39a"><li>Giant "4 available now" hero number, two-up person cards that lift on hover, pressable button physics.</li></ul>
+    </div>
+  </section>
+
+  <section class="direction">
+    <div class="dir-head">
+      <div class="swatch-stack"><span class="swatch" style="background:#fff;border-color:#eaeaea"></span><span class="swatch" style="background:#000"></span><span class="swatch" style="background:#666"></span></div>
+      <div><b>F · "Mono"</b><p>Vercel/xAI stark monochrome · pure black & white, hairlines only, uppercase mono labels, sharp corners</p></div>
+      <span class="tagline">stark · minimal</span>
+    </div>
+    <div class="dir-body">
+      <div class="links">
+        <a class="proto-link" href="f-calendar.html">Calendar →</a>
+        <a class="proto-link" href="f-team.html">Team →</a>
+        <a class="proto-link" href="f-settings.html">Settings →</a>
+      </div>
+      <ul class="notes"><li>Color exists only as annotation: events are white cards with a single colored top rule; status is a dot + mono label.</li></ul>
+    </div>
+  </section>
+
+  <footer>
+    Locked status semantics across all six directions:<br>
+    available <b style="color:#16a34a">green</b> · busy <b style="color:#dc2626">red</b> · in-meeting <b style="color:#ca8a04">amber</b> ·
+    focus <b style="color:#2563eb">blue</b> · traveling <b style="color:#7c3aed">violet</b> · offline <b style="color:#71767f">grey</b>.
+    <br><br>
+    Winner becomes the token set in <code>apps/web/src/index.css</code> (+ uniwind theme in <code>apps/native</code>) — screen structure stays.
+  </footer>
+</div>
+</body>
+</html>

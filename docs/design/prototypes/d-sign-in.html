@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Ember Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  /* ── Ember auth — split-screen editorial ──────────────────────── */
+  :root {
+    --paper:#faf7f2; --paper-deep:#f3efe6; --card:#fffdf9;
+    --line:#e8e2d6; --line-strong:#d8d0c0;
+    --ink:#2b2620; --ink-body:#57503f; --ink-muted:#6f6754;
+    --ember:#c2410c; --ember-deep:#9a3412; --ember-deeper:#7c2d12; --ember-soft:#fbe9dd;
+    --on-ember:#fff7ef; --on-ember-mute:#ffefe3; --on-ember-accent:#ffd9bd;
+    --serif:'Source Serif 4',Georgia,serif; --sans:'Inter',system-ui,sans-serif;
+    --ease-out:cubic-bezier(0.23, 1, 0.32, 1);
+    /* radius scale: sm = controls · md = cards · pill = CTAs */
+    --r-sm:8px; --r-md:12px;
+  }
+  * { margin:0;padding:0;box-sizing:border-box }
+  :focus-visible { outline:2px solid var(--ember); outline-offset:2px; border-radius:var(--r-sm) }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after {
+      transition-property: opacity, color, background-color, border-color !important;
+      transform: none !important;
+      animation: none !important;
+    }
+  }
+  body { font-family:var(--sans); font-size:14px; line-height:1.5; height:100vh; display:flex; overflow:hidden }
+
+  /* left brand panel */
+  .brand {
+    flex:1.05; background:linear-gradient(165deg,var(--ember) 0%, var(--ember-deep) 58%, var(--ember-deeper) 100%);
+    color:var(--on-ember); padding:56px 60px; display:flex; flex-direction:column; position:relative; overflow:hidden;
+  }
+  .brand::after { content:''; position:absolute; inset:0;
+    background:radial-gradient(700px 500px at 85% 110%, rgba(255,235,215,.18), transparent 60%);
+    pointer-events:none }
+  .brand-logo { display:flex; align-items:center; gap:11px; font-family:var(--serif); font-weight:600; font-size:20px }
+  .logo-mark { width:30px;height:30px;border-radius:50%;background:var(--on-ember);color:var(--ember);display:grid;place-items:center;font-family:var(--sans);font-size:13px;font-weight:700 }
+
+  .brand-quote { margin:auto 0; max-width:26ch; position:relative; z-index:1 }
+  .brand-quote h1 { font-family:var(--serif); font-weight:600; font-size:clamp(34px, 3.6vw, 50px); line-height:1.12; letter-spacing:-0.015em }
+  .brand-quote h1 .hl { color:var(--on-ember-accent) }
+  .brand-quote p { margin-top:22px; font-family:var(--serif); font-style:italic; font-size:16px; line-height:1.6; color:var(--on-ember-mute); max-width:38ch }
+
+  .brand-foot { position:relative; z-index:1; display:flex; gap:34px; font-size:12.5px; color:var(--on-ember-mute) }
+  .brand-foot b { display:block; font-family:var(--serif); font-size:19px; font-weight:600; color:#fff }
+
+  /* right form panel */
+  .form-side { flex:1; background:var(--paper); display:flex; align-items:center; justify-content:center; padding:40px }
+  .form-box { width:100%; max-width:380px }
+  .form-box .mobile-logo { display:none }
+
+  h2 { font-family:var(--serif); font-weight:600; font-size:28px; letter-spacing:-0.01em }
+  .form-sub { color:var(--ink-muted); margin-top:6px; margin-bottom:30px }
+
+  label { display:block; font-size:12px; font-weight:600; color:var(--ink-body); margin-bottom:6px }
+  input[type=email], input[type=password], input[type=text] {
+    width:100%; border:1px solid var(--line-strong); border-radius:var(--r-sm);
+    font:inherit; font-size:14px; padding:12px 15px; outline:none; color:var(--ink);
+    background:var(--card); transition:border-color .12s, box-shadow .12s; margin-bottom:18px;
+  }
+  input:focus { border-color:var(--ember); box-shadow:0 0 0 3px var(--ember-soft) }
+
+  .row-between { display:flex; justify-content:space-between; align-items:center; margin:-6px 0 20px }
+  .check { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--ink-body) }
+  a.forgot { font-size:13px; color:var(--ember); text-decoration:none }
+
+  .btn-primary {
+    width:100%; border:none; cursor:pointer; font:inherit; font-size:14px; font-weight:600;
+    background:var(--ember); color:#fff; padding:13px; border-radius:var(--r-sm);
+    transition:background .12s, transform .1s;
+  }
+  .btn-primary:active { transform:scale(.985) }
+
+  .divider { display:flex; align-items:center; gap:12px; margin:24px 0; color:var(--ink-muted); font-size:11.5px }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--line-strong) }
+
+  .btn-magic {
+    width:100%; border:1px solid var(--line-strong); background:var(--card); color:var(--ink);
+    cursor:pointer; font:inherit; font-size:13.5px; font-weight:500; padding:12px; border-radius:var(--r-sm);
+    display:flex; align-items:center; justify-content:center; gap:9px;
+  }
+
+  .swap { margin-top:26px; text-align:center; font-size:13.5px; color:var(--ink-muted) }
+  .swap a { color:var(--ember); font-weight:600; text-decoration:none }
+
+  @media (max-width: 800px) {
+    .brand { display:none }
+    .form-box .mobile-logo { display:flex; align-items:center; gap:10px; font-family:var(--serif); font-weight:600; font-size:19px; margin-bottom:34px; color:var(--ember) }
+    .mobile-logo span.mark { width:28px;height:28px;border-radius:50%;background:var(--ember);color:#fff;display:grid;place-items:center;font-family:var(--sans);font-size:12px;font-weight:700 }
+  }
+
+  /* hover only on devices that truly hover */
+  @media (hover: hover) and (pointer: fine) {
+    a.forgot:hover { text-decoration:underline }
+    .btn-primary:hover { background:var(--ember-deep) }
+    .btn-magic:hover { background:var(--paper-deep) }
+    .swap a:hover { text-decoration:underline }
+  }
+</style>
+</head>
+<body>
+
+<aside class="brand">
+  <div class="brand-logo"><div class="logo-mark">K</div>kairos</div>
+  <div class="brand-quote">
+    <h1>Your team's schedule, <span class="hl">at a glance.</span></h1>
+    <p>See who's free, who's focused, and who's out, before you have to ask.</p>
+  </div>
+  <div class="brand-foot">
+    <span><b>8</b> teammates</span>
+    <span><b>4</b> available right now</span>
+  </div>
+</aside>
+
+<main class="form-side">
+  <div class="form-box">
+    <!-- mobile-only logo -->
+    <div class="mobile-logo"><span class="mark">K</span>kairos</div>
+
+    <h2>Welcome back</h2>
+    <p class="form-sub">Sign in to see your team's day.</p>
+
+    <label for="email">Email address</label>
+    <input id="email" type="email" placeholder="amaan@fieldnote.studio" value="amaan@fieldnote.studio">
+
+    <label for="password">Password</label>
+    <input id="password" type="password" value="••••••••••">
+
+    <div class="row-between">
+      <label class="check" for="remember"><input id="remember" type="checkbox" checked> Keep me signed in</label>
+      <a class="forgot" href="#">Forgot password?</a>
+    </div>
+
+    <button class="btn-primary">Sign in →</button>
+
+    <div class="divider">or continue with</div>
+    <button class="btn-magic">
+      <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.57 5.57 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.29A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.29V6.62H1.29a12 12 0 0 0 0 10.76l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/></svg>
+      Continue with Google
+    </button>
+
+    <p class="swap">New here? <a href="d-sign-up.html">Create an account</a></p>
+  </div>
+</main>
+</body>
+</html>

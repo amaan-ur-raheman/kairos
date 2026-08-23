@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Pop — Team</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#101210; --card:#191c19; --card-raised:#212521; --line:#2a2f2a;
+    --ink:#fafdf7; --ink-muted:#9aa39a;
+    --lime:#a3e635; --lime-deep:#65a30d; --lime-glow:rgba(163,230,53,.3);
+    --st-available:#22c55e; --st-busy:#ef4444; --st-meeting:#eab308;
+    --st-focus:#38bdf8; --st-traveling:#a78bfa; --st-offline:#6b7280;
+    --display:'Inter Tight','Inter',sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  * { margin:0;padding:0;box-sizing:border-box }
+  html{color-scheme:dark}
+  body { font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;height:100vh;overflow:hidden }
+  .topbar { height:64px;display:flex;align-items:center;gap:20px;padding:0 24px;border-bottom:1px solid var(--line) }
+  .logo { font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-0.03em;display:flex;align-items:center }
+  .logo-mark { width:30px;height:30px;border-radius:10px;background:var(--lime);color:#101210;display:grid;place-items:center;font-size:13px;margin-right:-6px;z-index:1;box-shadow:3px 3px 0 rgba(163,230,53,.25) }
+  .logo span { padding-left:12px }
+  nav{display:flex;gap:6px}
+  nav a{color:var(--ink-muted);text-decoration:none;font-weight:600;font-size:13.5px;padding:8px 16px;border-radius:999px}
+  nav a.active{color:#101210;background:var(--lime)}
+
+  .page{max-width:860px;margin:0 auto;padding:28px 24px 60px;height:calc(100vh - 65px);overflow:auto}
+  h1{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-0.03em}
+
+  /* hero count — big consumer-style number */
+  .hero-count{margin:22px 0 26px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:26px 30px;display:flex;align-items:center;gap:24px}
+  .big-num{font-family:var(--display);font-weight:800;font-size:64px;line-height:.9;color:var(--lime);text-shadow:0 0 40px var(--lime-glow)}
+  .hero-count p{font-size:15px;color:var(--ink-muted);max-width:34ch;line-height:1.5}
+  .hero-count p b{color:var(--ink)}
+
+  .grid-people{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .person{
+    display:flex;align-items:center;gap:14px;
+    background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px;
+    transition:all .13s;
+  }
+  .person:hover{transform:translateY(-2px);border-color:#3a423a;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .avatar{position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:14px;color:#101210;flex-shrink:0}
+  .st-dot{position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-radius:50%;border:3px solid var(--card)}
+  .who{flex:1;min-width:0}
+  .who b{display:block;font-family:var(--display);font-weight:700;font-size:14.5px}
+  .who span{display:block;font-size:12px;color:var(--ink-muted)}
+  .badge{font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;flex-shrink:0}
+  .b-available{background:rgba(34,197,94,.15);color:#86efac}
+  .b-in_meeting{background:rgba(234,179,8,.14);color:#fde047}
+  .b-focus_time{background:rgba(56,189,248,.13);color:#7dd3fc}
+  .b-busy{background:rgba(239,68,68,.13);color:#fca5a5}
+  .b-traveling{background:rgba(167,139,250,.13);color:#c4b5fd}
+  .b-offline{background:rgba(107,114,128,.18);color:#9ca3af}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><div class="logo-mark">K</div><span>kairos</span></div>
+  <nav>
+    <a href="e-calendar.html">Calendar</a>
+    <a href="#" class="active">Team</a>
+    <a href="e-settings.html">Settings</a>
+  </nav>
+</header>
+
+<div class="page">
+  <h1>Team</h1>
+
+  <div class="hero-count">
+    <div class="big-num">4</div>
+    <p><b>available right now.</b> James and Maria are heads-down, Elena is traveling,
+       and Dan's on leave until Feb 17.</p>
+  </div>
+
+  <div class="grid-people">
+    <div class="person"><div class="avatar" style="background:var(--lime)">AK<span class="st-dot" style="background:var(--st-available)"></span></div>
+      <div class="who"><b>Amaan Khan</b><span>Backend Engineer</span></div><span class="badge b-available">Available</span></div>
+    <div class="person"><div class="avatar" style="background:#fde047">MR<span class="st-dot" style="background:var(--st-focus)"></span></div>
+      <div class="who"><b>Maria Ruiz</b><span>Product Designer</span></div><span class="badge b-focus_time">Focus</span></div>
+    <div class="person"><div class="avatar" style="background:#7dd3fc">JO<span class="st-dot" style="background:var(--st-meeting)"></span></div>
+      <div class="who"><b>James Okafor</b><span>Frontend Engineer</span></div><span class="badge b-in_meeting">In Meeting</span></div>
+    <div class="person"><div class="avatar" style="background:#86efac">PS<span class="st-dot" style="background:var(--st-busy)"></span></div>
+      <div class="who"><b>Priya Sharma</b><span>Eng Manager</span></div><span class="badge b-busy">Busy</span></div>
+    <div class="person"><div class="avatar" style="background:#fdba74">TL<span class="st-dot" style="background:var(--st-available)"></span></div>
+      <div class="who"><b>Tomás Lima</b><span>Data Engineer · dentist till noon</span></div><span class="badge b-available">Available</span></div>
+    <div class="person"><div class="avatar" style="background:#c4b5fd">EC<span class="st-dot" style="background:var(--st-traveling)"></span></div>
+      <div class="who"><b>Elena Costa</b><span>QA Engineer</span></div><span class="badge b-traveling">Traveling</span></div>
+    <div class="person"><div class="avatar" style="background:#9ca3af">DN<span class="st-dot" style="background:var(--st-offline)"></span></div>
+      <div class="who"><b>Dan Nilsson</b><span>DevOps · leave until Feb 17</span></div><span class="badge b-offline">Offline</span></div>
+    <div class="person"><div class="avatar" style="background:#fca5a5">YW<span class="st-dot" style="background:var(--st-offline)"></span></div>
+      <div class="who"><b>Yuki Watanabe</b><span>iOS Engineer</span></div><span class="badge b-offline">Offline</span></div>
+  </div>
+</div>
+</body>
+</html>
