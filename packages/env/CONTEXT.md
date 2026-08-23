@@ -1,0 +1,11 @@
+# Environment package context
+
+Typed environment variables via `@t3-oss/env-core` + zod, split per target.
+
+- `server.ts` — `DATABASE_URL`, Clerk secret/publishable keys, `CORS_ORIGIN` (falls back to the Vercel deployment URL), `NODE_ENV`. Importing it validates at startup; CI/test runs set placeholder values (`vitest.config.ts`).
+- `web.ts` — `VITE_SERVER_URL` (absolute URL or same-origin path like `/api` — production uses `/api` via the vercel rewrite) and `VITE_CLERK_PUBLISHABLE_KEY`.
+- `native.ts` — `EXPO_PUBLIC_SERVER_URL` (must be absolute) and `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`.
+
+## Gotchas
+- `import.meta.env` is untyped in this package (no vite/client types); the cast is intentional and annotated.
+- Add new vars to the schema first — code should never read `process.env` directly outside this package.
