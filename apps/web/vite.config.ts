@@ -4,7 +4,7 @@ import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   server: {
     port: 3001,
   },
@@ -12,8 +12,8 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   plugins: [tailwindcss(), tanstackStart(), nitro(), viteReact()],
-  // Bundle all SSR deps: Vercel functions have no node_modules at runtime
-  ssr: {
-    noExternal: true,
-  },
-});
+  // Bundle all SSR deps at build time: Vercel functions have no node_modules at
+  // runtime. In dev, keep deps externalized — the module runner can't evaluate
+  // CJS packages (react) inlined via noExternal.
+  ssr: command === "build" ? { noExternal: true } : undefined,
+}));
