@@ -3,7 +3,7 @@
 Shared shadcn/ui primitives consumed by the web app (single source of components/styles).
 
 ## Layout
-- `src/components/` — button, card, input, textarea, checkbox, dropdown-menu, tooltip, sonner (toasts), skeleton, empty, plus chat-style primitives (`message`, `bubble`, `marker`, `message-scroller`, `attachment`) from an earlier prototype.
+- `src/components/` — button, card, input, textarea, checkbox, dropdown-menu, tooltip, sonner (toasts), skeleton, empty.
 - `src/lib/utils.ts` — `cn()` helper.
 - `components.json` — shadcn CLI config; add new primitives with `npx shadcn@latest add <component> -c packages/ui`.
 

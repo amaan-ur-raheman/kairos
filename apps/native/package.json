@@ -18,6 +18,7 @@
     "@gorhom/bottom-sheet": "^5.2.14",
     "@kairos/api": "workspace:*",
     "@kairos/env": "workspace:*",
+    "@kairos/shared": "workspace:*",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-query": "catalog:",

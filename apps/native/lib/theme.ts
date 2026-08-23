@@ -1,3 +1,9 @@
+import {
+  type AvailabilityStatus,
+  normalizeStatus,
+  STATUS_LABELS,
+  STATUS_ORDER,
+} from "@kairos/shared";
 import { Platform } from "react-native";
 
 /** Ember palette — mirrors apps/web/src/index.css */
@@ -26,20 +32,26 @@ export const C = {
  *  Upgrade path: load Source Serif 4 via @expo-google-fonts + expo-font. */
 export const SERIF = Platform.OS === "ios" ? "Georgia" : "serif";
 
-export const STATUS_META: Record<string, { label: string; color: string }> = {
-  available: { label: "Available", color: C.stAvailable },
-  busy: { label: "Busy", color: C.stBusy },
-  in_meeting: { label: "In a Meeting", color: C.stMeeting },
-  focus_time: { label: "Focus Time", color: C.stFocus },
-  traveling: { label: "Traveling", color: C.stTraveling },
-  offline: { label: "Offline", color: C.stOffline },
+const STATUS_COLORS: Record<AvailabilityStatus, string> = {
+  available: C.stAvailable,
+  busy: C.stBusy,
+  in_meeting: C.stMeeting,
+  focus_time: C.stFocus,
+  traveling: C.stTraveling,
+  offline: C.stOffline,
 };
 
-export const STATUS_ORDER = [
-  "available",
-  "in_meeting",
-  "focus_time",
-  "busy",
-  "traveling",
-  "offline",
-];
+export const STATUS_META: Record<AvailabilityStatus, { label: string; color: string }> =
+  Object.fromEntries(
+    Object.entries(STATUS_LABELS).map(([k, label]) => [
+      k,
+      { label, color: STATUS_COLORS[k as AvailabilityStatus] },
+    ]),
+  ) as Record<AvailabilityStatus, { label: string; color: string }>;
+
+export { STATUS_ORDER };
+
+/** Safe lookup with "offline" fallback for unknown status values. */
+export function statusMeta(status: string | null | undefined) {
+  return STATUS_META[normalizeStatus(status)];
+}

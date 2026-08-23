@@ -18,6 +18,8 @@
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
     "@sinclair/typebox": "^0.34.52",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.35.6",
     "dotenv": "catalog:",
     "elysia": "catalog:",
     "zod": "catalog:"

@@ -1,6 +1,2 @@
-import { startOfWeek } from "date-fns";
-
-/** Monday-based start of the week containing `date` (correct across Sundays). */
-export function weekStartOf(date: Date): Date {
-  return startOfWeek(date, { weekStartsOn: 1 });
-}
+/** Re-exported from the shared package so imports stay stable across the app. */
+export { weekStartOf } from "@kairos/shared";

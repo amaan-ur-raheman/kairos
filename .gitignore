@@ -60,3 +60,4 @@ temp
 # AI session artifacts / local tooling
 pi-session-*.html
 .playwright-mcp/
+.env*

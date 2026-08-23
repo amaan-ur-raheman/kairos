@@ -28,7 +28,7 @@ vi.mock("@kairos/db", async () => {
 import { members as membersTable } from "@kairos/db/schema/members";
 import { organizations } from "@kairos/db/schema/organizations";
 
-import { createContext } from "../src/context";
+import { clearMembershipCacheForTests, createContext } from "../src/context";
 import { getCallsByOp, onSelect, resetDbMock } from "./helpers/db-mock";
 import { MEMBER_ID, ORG_ID, USER_ID } from "./helpers/fixtures";
 
@@ -50,6 +50,7 @@ function authState(overrides: Record<string, unknown> = {}) {
 describe("createContext", () => {
   beforeEach(() => {
     resetDbMock();
+    clearMembershipCacheForTests();
     vi.clearAllMocks();
     clerkFake.authenticateRequest.mockResolvedValue({
       toAuth: () => authState(),

@@ -20,3 +20,8 @@ oRPC routers + pure domain logic. The brain of the product; both web and native 
 - IDs are `crypto.randomUUID()` at insert time.
 - Neon has no transactions in HTTP mode — multi-statement writes use `db.batch`.
 - Validation lives in zod input schemas at the procedure boundary.
+
+## Auth context (`src/context.ts`)
+- Clerk roles map locally: `org:admin` → owner, `org:manager` → manager, anything else → member. Clerk-derived changes only ever *upgrade* a local role (never downgrade), so managers can still be granted directly in the DB.
+- Membership lookups are cached in-process for 60s per user+org; role changes propagate within that TTL.
+- Token audiences accepted by Clerk = `CORS_ORIGIN` + any extra origins in the comma-separated `CLERK_AUTHORIZED_PARTIES`.

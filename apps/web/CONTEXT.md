@@ -7,6 +7,7 @@ Team availability product: personal calendar (day/week/month/schedule views), te
 
 ## Layout
 - `src/routes/` — file-based routes. `/` redirects to `/calendar`. Pages are large self-contained components (`calendar.tsx` is the biggest; `team/$id.tsx` mirrors its grid logic).
+- `src/components/calendar/` — extracted from the calendar route: `constants.ts` (grid constants, tint tables), `date-utils.ts` (formatting helpers; day helpers re-exported from `@kairos/shared`), `event-dialog.tsx` (create/edit dialog).
 - `src/components/` — header, sidebar nav, loading/error states (`states.tsx`).
 - `src/utils/orpc.ts` — typed oRPC client; all data fetching goes through TanStack Query (`orpc.<router>.<proc>.queryOptions()`).
 - `index.css` — custom "paper" design system (CSS variables like `--ember`, `--ink-*`, `--paper-*`). Design prototypes live in `docs/design/prototypes/`.

@@ -2,7 +2,7 @@ import { db } from "@kairos/db";
 import { leaveRequests } from "@kairos/db/schema/leave";
 import { members } from "@kairos/db/schema/members";
 import { ORPCError } from "@orpc/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import z from "zod";
 import { orgProcedure } from "../index";
 
@@ -83,13 +83,29 @@ export const leaveRouter = {
       return rows[0];
     }),
 
-  /** List own leave requests */
-  listForMember: orgProcedure.handler(async ({ context }) => {
-    return db
-      .select()
-      .from(leaveRequests)
-      .where(eq(leaveRequests.memberId, context.auth!.memberId!));
-  }),
+  /** List own leave requests; optional `{ from, to }` (YYYY-MM-DD) overlap filter. */
+  listForMember: orgProcedure
+    .input(
+      z
+        .object({
+          from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        })
+        .optional(),
+    )
+    .handler(async ({ input, context }) => {
+      const conditions = [eq(leaveRequests.memberId, context.auth!.memberId!)];
+      if (input?.from && input?.to) {
+        conditions.push(
+          lte(leaveRequests.startDate, input.to),
+          gte(leaveRequests.endDate, input.from),
+        );
+      }
+      return db
+        .select()
+        .from(leaveRequests)
+        .where(and(...conditions));
+    }),
 
   /** Manager/Admin: list pending requests for the org */
   listPending: orgProcedure.handler(async ({ context }) => {

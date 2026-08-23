@@ -72,6 +72,10 @@ if (localKeys.length > 0) {
   );
 }
 
+// Vercel rejects secret visibility for public framework prefixes — they must
+// be readable at build time.
+const PUBLIC_PREFIX_PATTERN = /^(?:VITE_|NEXT_PUBLIC_|NUXT_PUBLIC_|EXPO_PUBLIC_|PUBLIC_)/;
+
 console.log(`Syncing ${env.size} env var(s) to Vercel ${environment}.`);
 for (const [key, value] of env.entries()) {
   const result = spawnSync(
@@ -85,6 +89,7 @@ for (const [key, value] of env.entries()) {
       "--force",
       "--yes",
       "--non-interactive",
+      ...(PUBLIC_PREFIX_PATTERN.test(key) ? ["--no-sensitive"] : []),
       ...vercelArgs,
     ],
     {

@@ -12,3 +12,4 @@ Kairos uses separate context documents for the application and package areas in 
 | Environment package | `packages/env/CONTEXT.md` |
 | UI package | `packages/ui/CONTEXT.md` |
 | Shared config | `packages/config/CONTEXT.md` |
+| Shared domain logic | `packages/shared/CONTEXT.md` |
