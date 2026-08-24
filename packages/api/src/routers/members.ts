@@ -28,25 +28,27 @@ export const membersRouter = {
       .where(eq(members.organizationId, context.auth!.organizationId!));
   }),
 
-  getById: orgProcedure.input(z.object({ id: z.string() })).handler(async ({ input, context }) => {
-    const rows = await db
-      .select()
-      .from(members)
-      .where(
-        and(eq(members.id, input.id), eq(members.organizationId, context.auth!.organizationId!)),
-      )
-      .limit(1);
-    return rows[0] ?? null;
-  }),
+  getById: orgProcedure
+    .input(z.object({ id: z.string().trim().min(1) }))
+    .handler(async ({ input, context }) => {
+      const rows = await db
+        .select()
+        .from(members)
+        .where(
+          and(eq(members.id, input.id), eq(members.organizationId, context.auth!.organizationId!)),
+        )
+        .limit(1);
+      return rows[0] ?? null;
+    }),
 
   updateProfile: orgProcedure
     .input(
       z.object({
-        id: z.string(),
-        name: z.string().max(200).optional(),
-        jobRole: z.string().max(200).optional(),
-        timezone: z.string().max(64).optional(),
-        skills: z.array(z.string().max(100)).max(50).optional(),
+        id: z.string().trim().min(1),
+        name: z.string().trim().min(1).max(200).optional(),
+        jobRole: z.string().trim().max(200).optional(),
+        timezone: z.string().trim().max(64).optional(),
+        skills: z.array(z.string().trim().min(1).max(100)).max(50).optional(),
       }),
     )
     .handler(async ({ input, context }) => {

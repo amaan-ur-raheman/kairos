@@ -10,6 +10,7 @@ vi.mock("@kairos/env/server", () => ({
     CLERK_PUBLISHABLE_KEY: "pk_test_mock",
     CORS_ORIGIN: "http://localhost:3001",
     NODE_ENV: "test",
+    VERCEL: "1",
   },
 }));
 

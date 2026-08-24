@@ -1,4 +1,12 @@
-import { boolean, index, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 import { members } from "./members";
 
@@ -18,7 +26,7 @@ export const availabilityStatus = pgTable(
     expiresAt: timestamp("expires_at"),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (t) => [index("availability_member_idx").on(t.memberId)],
+  (t) => [uniqueIndex("availability_member_unique_idx").on(t.memberId)],
 );
 
 export const workingHours = pgTable(
@@ -33,5 +41,5 @@ export const workingHours = pgTable(
     endTime: text("end_time").notNull(), // "18:00"
     isWorkingDay: boolean("is_working_day").notNull().default(true),
   },
-  (t) => [index("working_hours_member_idx").on(t.memberId)],
+  (t) => [uniqueIndex("working_hours_member_day_unique_idx").on(t.memberId, t.dayOfWeek)],
 );

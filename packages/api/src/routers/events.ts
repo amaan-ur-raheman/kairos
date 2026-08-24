@@ -16,12 +16,28 @@ const recurrenceSchema = z.object({
 });
 
 const eventFields = {
-  title: z.string().min(1),
+  title: z.string().trim().min(1).max(500),
   start: z.string().datetime(),
   end: z.string().datetime(),
-  color: z.string().default("#3f51b5"),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{3,8}$/)
+    .default("#3f51b5"),
   ...recurrenceSchema.shape,
 };
+
+/** Shared window filter for calendar queries — dedupes list/listForMember. */
+function windowConditions(from?: string, to?: string) {
+  if (!from || !to) return [];
+  return [
+    lte(calendarEvents.startTime, new Date(to)),
+    or(ne(calendarEvents.recurrence, "none"), gte(calendarEvents.endTime, new Date(from)))!,
+    or(
+      isNull(calendarEvents.recurrenceUntil),
+      gte(calendarEvents.recurrenceUntil, new Date(from)),
+    )!,
+  ];
+}
 
 export const eventsRouter = {
   /**
@@ -40,20 +56,10 @@ export const eventsRouter = {
         .optional(),
     )
     .handler(async ({ input, context }) => {
-      const conditions = [eq(calendarEvents.memberId, context.auth!.memberId!)];
-      if (input?.from && input?.to) {
-        conditions.push(
-          lte(calendarEvents.startTime, new Date(input.to)),
-          or(
-            ne(calendarEvents.recurrence, "none"),
-            gte(calendarEvents.endTime, new Date(input.from)),
-          )!,
-          or(
-            isNull(calendarEvents.recurrenceUntil),
-            gte(calendarEvents.recurrenceUntil, new Date(input.from)),
-          )!,
-        );
-      }
+      const conditions = [
+        eq(calendarEvents.memberId, context.auth!.memberId!),
+        ...windowConditions(input?.from, input?.to),
+      ];
       return db
         .select()
         .from(calendarEvents)
@@ -64,13 +70,12 @@ export const eventsRouter = {
   listForMember: orgProcedure
     .input(
       z.object({
-        memberId: z.string(),
+        memberId: z.string().trim().min(1),
         from: z.string().datetime().optional(),
         to: z.string().datetime().optional(),
       }),
     )
     .handler(async ({ input, context }) => {
-      // Verify target is in same org
       const target = await db
         .select({ orgId: members.organizationId })
         .from(members)
@@ -79,20 +84,10 @@ export const eventsRouter = {
       if (!target[0] || target[0].orgId !== context.auth!.organizationId) {
         throw new ORPCError("NOT_FOUND", { message: "Member not found" });
       }
-      const conditions = [eq(calendarEvents.memberId, input.memberId)];
-      if (input.from && input.to) {
-        conditions.push(
-          lte(calendarEvents.startTime, new Date(input.to)),
-          or(
-            ne(calendarEvents.recurrence, "none"),
-            gte(calendarEvents.endTime, new Date(input.from)),
-          )!,
-          or(
-            isNull(calendarEvents.recurrenceUntil),
-            gte(calendarEvents.recurrenceUntil, new Date(input.from)),
-          )!,
-        );
-      }
+      const conditions = [
+        eq(calendarEvents.memberId, input.memberId),
+        ...windowConditions(input.from, input.to),
+      ];
       return db
         .select()
         .from(calendarEvents)
@@ -126,7 +121,7 @@ export const eventsRouter = {
 
   /** Edits apply to the whole series (recurring events are a single definition). */
   update: orgProcedure
-    .input(z.object({ id: z.string(), ...eventFields }))
+    .input(z.object({ id: z.string().trim().min(1), ...eventFields }))
     .handler(async ({ input, context }) => {
       if (new Date(input.end) <= new Date(input.start)) {
         throw new ORPCError("BAD_REQUEST", { message: "End must be after start" });
@@ -158,14 +153,19 @@ export const eventsRouter = {
     }),
 
   /** Deletes the whole series for recurring events. */
-  delete: orgProcedure.input(z.object({ id: z.string() })).handler(async ({ input, context }) => {
-    const deleted = await db
-      .delete(calendarEvents)
-      .where(
-        and(eq(calendarEvents.id, input.id), eq(calendarEvents.memberId, context.auth!.memberId!)),
-      )
-      .returning();
-    if (!deleted[0]) throw new ORPCError("NOT_FOUND", { message: "Event not found" });
-    return deleted[0];
-  }),
+  delete: orgProcedure
+    .input(z.object({ id: z.string().trim().min(1) }))
+    .handler(async ({ input, context }) => {
+      const deleted = await db
+        .delete(calendarEvents)
+        .where(
+          and(
+            eq(calendarEvents.id, input.id),
+            eq(calendarEvents.memberId, context.auth!.memberId!),
+          ),
+        )
+        .returning();
+      if (!deleted[0]) throw new ORPCError("NOT_FOUND", { message: "Event not found" });
+      return deleted[0];
+    }),
 };
