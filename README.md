@@ -70,6 +70,39 @@ Point-in-time restore is enabled per-branch in the Neon console. Keep at least t
 - Set `CLERK_SECRET_KEY` in `apps/server/.env` for server-side Clerk auth
 - Set `CLERK_PUBLISHABLE_KEY` in `apps/server/.env` for server-side Clerk request verification
 
+### Google sign-in for native builds
+
+The Expo app uses Clerk's native Google flow. Copy `apps/native/.env.example` to
+`apps/native/.env` and set the production Google client IDs before creating a
+development, preview, or production build. Expo Go cannot run native Google
+authentication.
+
+The default release identifiers are configurable through the native build environment:
+
+- Android package: `com.amaan.kairos`
+- iOS bundle ID: `com.amaan.kairos`
+
+Set `KAIROS_ANDROID_PACKAGE` and `KAIROS_IOS_BUNDLE_IDENTIFIER` in the build
+environment if these identifiers differ. They must match the Android/iOS OAuth
+clients, Clerk production Native Applications, and store registrations. Do not
+change them after publishing an app update.
+
+Google Cloud and Clerk production setup:
+
+1. Enable Google sign-in in the Clerk production instance and copy its authorized redirect URI.
+2. Create web and Android OAuth clients in the same Google Cloud project; use the Android package above and the release certificate fingerprint for Android.
+3. Put the web and Android client IDs in `apps/native/.env` and add the web client ID/secret to Clerk.
+4. Register the Android app and SHA-256 fingerprint in Clerk's production Native Applications page.
+5. Build with EAS; Google authentication is not supported in Expo Go.
+
+Build commands:
+
+```bash
+cd apps/native
+eas build --platform android --profile production
+eas submit --platform android --profile production
+```
+
 Then, run the development server:
 
 ```bash
