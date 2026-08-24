@@ -27,6 +27,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@clerk/expo": "^4.1.0",
+        "@clerk/expo-google-signin": "^0.1.0",
         "@expo/metro-runtime": "~57.0.7",
         "@expo/vector-icons": "^15.1.1",
         "@gorhom/bottom-sheet": "^5.2.14",
@@ -39,6 +40,7 @@
         "dotenv": "catalog:",
         "expo": "~57.0.8",
         "expo-constants": "~57.0.7",
+        "expo-crypto": "~15.0.0",
         "expo-font": "~57.0.1",
         "expo-haptics": "~57.0.1",
         "expo-linking": "~57.0.4",
@@ -435,6 +437,8 @@
     "@clerk/clerk-js": ["@clerk/clerk-js@6.29.3", "", { "dependencies": { "@base-org/account": "2.0.1", "@clerk/shared": "^4.29.3", "@coinbase/wallet-sdk": "4.3.7", "@solana/wallet-adapter-base": "0.9.27", "@solana/wallet-adapter-react": "0.15.39", "@solana/wallet-standard": "1.1.4", "@stripe/stripe-js": "5.6.0", "@swc/helpers": "0.5.21", "@tanstack/query-core": "^5.100.6", "@wallet-standard/core": "1.1.1", "@zxcvbn-ts/core": "3.0.4", "@zxcvbn-ts/language-common": "3.0.4", "alien-signals": "2.0.6", "browser-tabs-lock": "1.3.0", "core-js": "3.47.0", "crypto-js": "^4.2.0", "dequal": "2.0.3" } }, "sha512-CfamNIf04jhwAMr4+tMI/ZOXj04Tep725cTrnz/Ve6PtjAFzS2XkYlOPjiBA9yfk8gYMbuI4zZeAklbs84UC8g=="],
 
     "@clerk/expo": ["@clerk/expo@4.5.2", "", { "dependencies": { "@clerk/clerk-js": "^6.29.3", "@clerk/react": "^6.14.5", "@clerk/shared": "^4.29.3", "base-64": "^1.0.0", "react-native-url-polyfill": "4.0.0", "tslib": "2.8.1" }, "peerDependencies": { "@clerk/expo-google-signin": ">=0.1.0", "@clerk/expo-passkeys": ">=0.0.6", "expo": ">=54 <58", "expo-apple-authentication": ">=7.0.0", "expo-auth-session": ">=5", "expo-constants": ">=12", "expo-crypto": ">=12", "expo-local-authentication": ">=13.5.0", "expo-secure-store": ">=12.4.0", "expo-web-browser": ">=12.5.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0", "react-native": ">=0.75" }, "optionalPeers": ["@clerk/expo-google-signin", "@clerk/expo-passkeys", "expo-apple-authentication", "expo-auth-session", "expo-constants", "expo-crypto", "expo-local-authentication", "expo-secure-store", "expo-web-browser", "react-dom"] }, "sha512-sdvcXJ9dPIaZaGTM8clxyQCwpEYuL4mSBnMoXLoOKzHPKSxeW6Y4FQqQbiT/Rr954cUKAjeFYD4oPSboP9yWog=="],
+
+    "@clerk/expo-google-signin": ["@clerk/expo-google-signin@0.1.0", "", { "dependencies": { "@clerk/react": "^6.11.3", "@clerk/shared": "^4.23.0", "tslib": "2.8.1" }, "peerDependencies": { "expo": ">=53 <57", "expo-constants": ">=12", "expo-crypto": ">=12", "react": "^18.0.0 || ^19.0.0", "react-native": ">=0.75" }, "optionalPeers": ["expo-constants"] }, "sha512-NUZWkqfftN7rxm4IiMayg2RKpzPP9Zm+Cmv/u3h4tCz9EcwLRAXIQ+OZsrALeqdmTwWqwFsFFGTyg7W8lxqoBg=="],
 
     "@clerk/react": ["@clerk/react@6.14.5", "", { "dependencies": { "@clerk/shared": "^4.29.3", "tslib": "2.8.1" }, "peerDependencies": { "react": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0", "react-dom": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0" } }, "sha512-J8VYDmlRqe2+fq49+FtsbQHJG6p5TcCjJ5myA0sBZ5ht8m2HsgJ9OV6qmIpupLmnDgu9Cp/9Pe/JpUM1JAxAjA=="],
 
@@ -1767,6 +1771,8 @@
     "expo-asset": ["expo-asset@57.0.13", "", { "dependencies": { "@expo/image-utils": "^0.11.4", "expo-constants": "~57.0.13" }, "peerDependencies": { "expo": "*", "react": "*", "react-native": "*" } }, "sha512-RPjMcmPXRMb6UbQdTIkmSDEnQL5LKGTu7ZXatq3U67V6ldlSdQeQ9pQV7zlmk0DrbnaMEh3HYiEh2YxWLNyCzA=="],
 
     "expo-constants": ["expo-constants@57.0.13", "", { "dependencies": { "@expo/env": "~2.4.2" }, "peerDependencies": { "expo": "*", "react-native": "*" } }, "sha512-eB5AHp7kKxsVIBjTetUgj5WQSw8joI2ekzgTlcUv+Hc0x2t0jZU6IiL4DpyOT2yZQ71n0WJZCkmOKLgxlajIzg=="],
+
+    "expo-crypto": ["expo-crypto@15.0.9", "", { "dependencies": { "base64-js": "^1.3.0" }, "peerDependencies": { "expo": "*" } }, "sha512-SNWKa2fXx7v9gkp1h/7nqXY5XN7qgNDn3yRc2aO0gWGbeMbvob/haMxxsPFe9f51aqH5NjNCqHf2kvLhvAd8KQ=="],
 
     "expo-file-system": ["expo-file-system@57.0.5", "", { "peerDependencies": { "expo": "*", "react-native": "*" } }, "sha512-XjGrCClF0935y5wLB9qNQQUVptNEy+0OloBstXlCd+IeNXLo3uNOod6cX4N0hofIhNIrN1Al8fwfay7R0Z1a2A=="],
 

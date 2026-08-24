@@ -2,7 +2,7 @@ import { useSignIn } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-
+import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { C, SERIF } from "@/lib/theme";
 
 function pushDecoratedUrl(
@@ -129,6 +129,8 @@ export default function Page() {
 
       <Text style={styles.title}>Welcome back</Text>
       <Text style={styles.subtitle}>Sign in to see your team's day.</Text>
+
+      <GoogleSignInButton />
 
       {statusMessage && <Text style={styles.helper}>{statusMessage}</Text>}
 

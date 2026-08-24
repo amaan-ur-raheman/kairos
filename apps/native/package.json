@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@clerk/expo": "^4.1.0",
+    "@clerk/expo-google-signin": "^0.1.0",
     "@expo/metro-runtime": "~57.0.7",
     "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.14",
@@ -26,6 +27,7 @@
     "dotenv": "catalog:",
     "expo": "~57.0.8",
     "expo-constants": "~57.0.7",
+    "expo-crypto": "~15.0.0",
     "expo-font": "~57.0.1",
     "expo-haptics": "~57.0.1",
     "expo-linking": "~57.0.4",
