@@ -1,5 +1,7 @@
 import { OrganizationSwitcher, UserButton, useAuth } from "@clerk/tanstack-react-start";
 import { Link, useLocation } from "@tanstack/react-router";
+import { Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const NAV_LINKS = [
   { to: "/calendar", label: "Calendar" },
@@ -7,67 +9,77 @@ const NAV_LINKS = [
   { to: "/settings", label: "Settings" },
 ] as const;
 
+const ORG_SWITCHER = {
+  hidePersonal: true,
+  afterCreateOrganizationUrl: "/calendar",
+  afterSelectOrganizationUrl: "/calendar",
+} as const;
+
 export default function Header() {
   const { isLoaded, isSignedIn } = useAuth();
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
-  const initials = "AK"; // UserButton renders the real avatar; chip shows brand mark fallback
+  // Close the mobile sheet on navigation
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is intentionally the trigger
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Escape closes the mobile sheet
+  useEffect(() => {
+    if (!mobileOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMobileOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
 
   return (
     <header
-      className="sticky top-0 z-40 flex items-center gap-6 h-[60px] px-5 lg:px-8 shrink-0"
-      style={{ background: "var(--card)", borderBottom: "3px double var(--color-border-strong)" }}
+      className="sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 sm:px-6 lg:px-10 shrink-0"
+      style={{ background: "var(--card)", borderBottom: "1px solid var(--color-border-strong)" }}
     >
-      <Link
-        to="/calendar"
-        className="flex items-center gap-2.5 font-serif-display font-semibold text-[19px] tracking-[-0.01em]"
-      >
-        <span
-          aria-hidden
-          className="w-[25px] h-[25px] rounded-full grid place-items-center text-white text-[11px] font-bold"
-          style={{ background: "var(--ember)", fontFamily: "var(--font-sans)" }}
+      {/* Left cluster: logo + nav */}
+      <div className="flex items-center gap-1 sm:gap-4">
+        <Link
+          to="/calendar"
+          className="flex items-center gap-2.5 font-serif-display font-semibold text-[19px] tracking-[-0.01em]"
         >
-          K
-        </span>
-        kairos
-      </Link>
+          <span
+            aria-hidden
+            className="w-[25px] h-[25px] rounded-full grid place-items-center text-white text-[11px] font-bold"
+            style={{ background: "var(--ember)", fontFamily: "var(--font-sans)" }}
+          >
+            K
+          </span>
+          kairos
+        </Link>
 
-      {isLoaded && isSignedIn && (
-        <nav className="hidden md:flex items-center gap-[22px]" aria-label="Primary">
-          {NAV_LINKS.map(({ to, label }) => {
-            const active = isActive(to);
-            return (
+        {isLoaded && isSignedIn && (
+          <nav className="hidden md:flex items-center gap-1" aria-label="Primary">
+            {NAV_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
-                className="text-[13.5px] font-medium"
-                style={
-                  active
-                    ? {
-                        color: "var(--ember)",
-                        textDecoration: "underline",
-                        textDecorationThickness: "1.5px",
-                        textUnderlineOffset: "5px",
-                      }
-                    : { color: "var(--ink-muted)" }
-                }
+                className="nav-link"
+                data-active={location.pathname.startsWith(to)}
               >
                 {label}
               </Link>
-            );
-          })}
-        </nav>
-      )}
+            ))}
+          </nav>
+        )}
+      </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      {/* Right cluster */}
+      <div className="flex items-center gap-5">
         {isLoaded && isSignedIn ? (
           <>
             <div className="hidden sm:block [&_.clerk-internal]:!text-[12px]">
               <OrganizationSwitcher
-                hidePersonal
-                afterCreateOrganizationUrl="/calendar"
-                afterSelectOrganizationUrl="/calendar"
+                {...ORG_SWITCHER}
                 appearance={{
                   elements: {
                     organizationSwitcherTrigger: "text-[12.5px] font-medium",
@@ -76,21 +88,67 @@ export default function Header() {
                 }}
               />
             </div>
-            <div
-              className="rounded-full overflow-hidden"
-              style={{ boxShadow: "0 0 0 2px var(--paper), 0 0 0 3.5px var(--ember)" }}
+            <UserButton />
+            {/* Mobile menu toggle */}
+            <button
+              type="button"
+              className="icon-btn md:hidden"
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMobileOpen((v) => !v)}
             >
-              <UserButton />
-            </div>
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </>
         ) : isLoaded ? (
           <span className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
             Sign in to continue
           </span>
-        ) : (
-          <span className="sr-only">{initials}</span>
-        )}
+        ) : null}
       </div>
+
+      {/* ══ Mobile nav sheet ══ */}
+      {isLoaded && isSignedIn && mobileOpen && (
+        <div
+          id="mobile-nav"
+          className="md:hidden fixed left-0 right-0 top-[60px] z-30 px-5 py-4"
+          style={{
+            background: "var(--card)",
+            borderBottom: "1px solid var(--color-border)",
+            boxShadow: "var(--shadow-md)",
+          }}
+        >
+          <nav aria-label="Mobile" style={{ display: "flex", flexDirection: "column" }}>
+            {NAV_LINKS.map(({ to, label }) => {
+              const active = location.pathname.startsWith(to);
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className="py-3 text-[15px] font-medium border-b last:border-b-0"
+                  style={{
+                    color: active ? "var(--ember)" : "var(--ink-secondary)",
+                    borderColor: "var(--color-border-subtle)",
+                    textDecoration: "none",
+                    paddingLeft: active ? 10 : 0,
+                    borderLeft: active ? "2px solid var(--ember)" : "2px solid transparent",
+                  }}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div
+            className="mt-2 pt-4 flex items-center justify-between border-t"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <OrganizationSwitcher {...ORG_SWITCHER} />
+            <UserButton />
+          </div>
+        </div>
+      )}
     </header>
   );
 }

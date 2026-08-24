@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TIME_OPTIONS } from "./constants";
 import { compose, parseHM, shift } from "./date-utils";
 
@@ -61,6 +61,51 @@ export function EventDialog({
   );
   const [recInterval, setRecInterval] = useState(initial?.recurrenceInterval ?? 1);
   const [recUntil, setRecUntil] = useState(initial?.recurrenceUntil ?? "");
+  const titleRef = useRef<HTMLInputElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const prevFocusRef = useRef<HTMLElement | null>(null);
+
+  // Capture the trigger element once on open, focus the title
+  useEffect(() => {
+    prevFocusRef.current = document.activeElement as HTMLElement | null;
+    titleRef.current?.focus();
+  }, []);
+
+  // Restore focus to the trigger on close
+  useEffect(
+    () => () => {
+      prevFocusRef.current?.focus?.();
+    },
+    [],
+  );
+
+  // Escape closes
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onCancel();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  // Focus trap — keep Tab cycling inside the dialog
+  function trapTab(e: React.KeyboardEvent) {
+    if (e.key !== "Tab" || !overlayRef.current) return;
+    const focusables = overlayRef.current.querySelectorAll<HTMLElement>(
+      'button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
   const invalid =
     !title.trim() ||
@@ -86,6 +131,8 @@ export function EventDialog({
   const dayToggle = (n: number, label: string) => (
     <button
       type="button"
+      aria-label={["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][n]}
+      aria-pressed={recDays.includes(n)}
       onClick={() =>
         setRecDays((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]))
       }
@@ -106,15 +153,23 @@ export function EventDialog({
 
   return (
     <div
+      ref={overlayRef}
       className="fixed inset-0 z-50 grid place-items-center p-4"
-      style={{ background: "rgba(43,38,32,.35)" }}
+      style={{ background: "rgba(43,38,32,.35)", overscrollBehavior: "contain" }}
       role="dialog"
       aria-modal
+      aria-label={mode === "edit" ? "Edit event" : "New event"}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel();
+      }}
+      onKeyDown={trapTab}
     >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stopPropagation prevents overlay click-away dismiss */}
       <form
         onSubmit={submit}
         className="w-full max-w-md rounded-xl border p-6 max-h-[90vh] overflow-y-auto"
         style={{ background: "var(--card)", borderColor: "var(--color-border)" }}
+        onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-serif-display text-lg font-semibold mb-5">
           {mode === "edit" ? "Edit event" : "New event"}
@@ -124,11 +179,12 @@ export function EventDialog({
           Title
         </label>
         <input
+          ref={titleRef}
           id="ev-title"
           className="input-paper mb-4"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="College — Monday class"
+          placeholder="College — Monday class…"
         />
 
         <label className="field-label" htmlFor="ev-date">
@@ -182,8 +238,11 @@ export function EventDialog({
         )}
 
         {/* recurrence */}
-        <div className="field-label">Repeats</div>
+        <label className="field-label" htmlFor="ev-recurrence">
+          Repeats
+        </label>
         <select
+          id="ev-recurrence"
           className="input-paper mb-3"
           value={recurrence}
           onChange={(e) => setRecurrence(e.target.value)}
@@ -224,9 +283,12 @@ export function EventDialog({
           </div>
         )}
 
-        <div className="field-label">Ends</div>
+        <label className="field-label" htmlFor="ev-ends">
+          Ends
+        </label>
         <div className="flex items-center gap-2 mb-4">
           <select
+            id="ev-ends"
             className="input-paper"
             style={{ width: 110 }}
             value={recUntil ? "on" : "never"}
@@ -248,12 +310,25 @@ export function EventDialog({
           )}
         </div>
 
-        <div className="flex items-center gap-2 mb-6">
-          {["#c93c37", "#b98212", "#3f9142", "#3b6fb5", "#7d55b5", "#2b2620"].map((c) => (
+        <fieldset
+          className="flex items-center gap-2 mb-6 border-0 p-0 m-0"
+          aria-label="Event color"
+        >
+          {(
+            [
+              ["#c93c37", "Red"],
+              ["#b98212", "Amber"],
+              ["#3f9142", "Green"],
+              ["#3b6fb5", "Blue"],
+              ["#7d55b5", "Purple"],
+              ["#2b2620", "Ink"],
+            ] as const
+          ).map(([c, name]) => (
             <button
               key={c}
               type="button"
-              aria-label={`Color ${c}`}
+              aria-label={`${name} color`}
+              aria-pressed={color === c}
               onClick={() => setColor(c)}
               className="w-6 h-6 rounded-full press-scale"
               style={{
@@ -262,7 +337,7 @@ export function EventDialog({
               }}
             />
           ))}
-        </div>
+        </fieldset>
 
         {error && (
           <p className="text-xs mb-3" style={{ color: "var(--status-busy)" }}>

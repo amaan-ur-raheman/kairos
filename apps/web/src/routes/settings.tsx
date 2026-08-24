@@ -60,17 +60,26 @@ for (let h = 0; h <= 23; h++) {
   }
 }
 
-const TIMEZONES = [
-  "UTC",
-  "Europe/London",
-  "Europe/Berlin",
-  "America/New_York",
-  "America/Los_Angeles",
-  "Asia/Dubai",
-  "Asia/Kolkata",
-  "Asia/Tokyo",
-  "Australia/Sydney",
-];
+const TIMEZONES: string[] = (() => {
+  try {
+    return Intl.supportedValuesOf("timeZone");
+  } catch {
+    // Fallback for browsers without Intl.supportedValuesOf
+    return [
+      "UTC",
+      "Europe/London",
+      "Europe/Berlin",
+      "America/New_York",
+      "America/Chicago",
+      "America/Los_Angeles",
+      "Asia/Dubai",
+      "Asia/Kolkata",
+      "Asia/Singapore",
+      "Asia/Tokyo",
+      "Australia/Sydney",
+    ];
+  }
+})();
 
 function expiryToDate(choice: string): string | undefined {
   const now = new Date();
@@ -145,12 +154,6 @@ function SettingsPage() {
     }
   }, [myStatus]);
 
-  const [skills, setSkills] = useState<string[]>([]);
-  const [newSkill, setNewSkill] = useState("");
-  useEffect(() => {
-    if (me?.skills) setSkills(me.skills);
-  }, [me?.skills]);
-
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: orpc.members.me.key() });
     queryClient.invalidateQueries({ queryKey: orpc.availability.getWorkingHours.key() });
@@ -185,14 +188,13 @@ function SettingsPage() {
 
   const profileDirty =
     !!me && (jobRole !== (me.jobRole ?? "") || timezone !== (me.timezone ?? "UTC"));
-  const skillsDirty = !!me && JSON.stringify(skills) !== JSON.stringify(me.skills ?? []);
   const hoursDirty = savedHours
     ? JSON.stringify(hours) !== JSON.stringify(savedHours)
     : JSON.stringify(hours) !== JSON.stringify(DEFAULT_HOURS);
   const statusChanged =
     !!myStatus &&
     (status !== myStatus.status || note !== (myStatus.note ?? "") || expiry !== "never");
-  const anyDirty = profileDirty || skillsDirty || hoursDirty || statusChanged;
+  const anyDirty = profileDirty || hoursDirty || statusChanged;
 
   const saveError = updateProfile.error ?? saveHours.error ?? setStatusMutation.error;
 
@@ -213,13 +215,12 @@ function SettingsPage() {
         }),
       );
     }
-    if (profileDirty || skillsDirty) {
+    if (profileDirty) {
       chain = chain.then(() =>
         updateProfile.mutateAsync({
           id: me!.id,
           jobRole: jobRole.trim() || undefined,
           timezone,
-          skills,
         }),
       );
     }
@@ -238,6 +239,7 @@ function SettingsPage() {
   }
 
   function discard() {
+    if (!window.confirm("Discard unsaved changes?")) return;
     setStatus(myStatus?.status ?? "available");
     setNote(myStatus?.note ?? "");
     setExpiry("never");
@@ -245,7 +247,6 @@ function SettingsPage() {
       setJobRole(me.jobRole ?? "");
       setTimezone(me.timezone ?? "UTC");
     }
-    setSkills(me?.skills ?? []);
     if (savedHours) setHours(savedHours.map((h) => ({ ...h })));
     else setHours(DEFAULT_HOURS);
     [setStatusMutation, updateProfile, saveHours].forEach((m) => {
@@ -263,13 +264,6 @@ function SettingsPage() {
           : x,
       ),
     );
-  }
-
-  function addSkill() {
-    const v = newSkill.trim();
-    if (!v || skills.includes(v)) return;
-    setSkills([...skills, v]);
-    setNewSkill("");
   }
 
   if (meQuery.isLoading) {
@@ -383,31 +377,6 @@ function SettingsPage() {
               </div>
             </div>
           </section>
-
-          {/* Skills skeleton */}
-          <section className="section">
-            <div className="section-head">
-              <Skeleton className="h-5 w-16" />
-              <Skeleton className="h-3 w-44 ml-auto" />
-            </div>
-            <div className="row">
-              <div className="row-label">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-28 mt-2" />
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="flex gap-2">
-                  <Skeleton className="h-7 w-20 rounded-full" />
-                  <Skeleton className="h-7 w-24 rounded-full" />
-                  <Skeleton className="h-7 w-16 rounded-full" />
-                </div>
-                <div className="flex gap-2 max-w-[380px]">
-                  <Skeleton className="h-10 flex-1" />
-                  <Skeleton className="h-10 w-16" />
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
     );
@@ -431,7 +400,7 @@ function SettingsPage() {
       <div className="sheet">
         <header className="page-head">
           <span className="kicker">
-            Fieldnote Studio · <span className="capitalize">{me.role}</span>
+            Kairos · <span className="capitalize">{me.role}</span>
           </span>
           <h1 className="page-title">Settings</h1>
         </header>
@@ -466,7 +435,12 @@ function SettingsPage() {
                   </span>
                 </div>
               </div>
-              <button type="button" className="ghost-btn" onClick={() => clerk.openUserProfile()}>
+              <button
+                type="button"
+                className="ghost-btn"
+                title="Opens Clerk profile editor"
+                onClick={() => clerk.openUserProfile()}
+              >
                 Edit profile
               </button>
             </div>
@@ -480,7 +454,7 @@ function SettingsPage() {
             <input
               id="jobrole"
               type="text"
-              className="max-w-[280px]"
+              className="w-full max-w-[280px]"
               value={jobRole}
               onChange={(e) => setJobRole(e.target.value)}
               placeholder="Backend Engineer"
@@ -494,7 +468,7 @@ function SettingsPage() {
             </label>
             <select
               id="tz"
-              className="max-w-[280px]"
+              className="w-full max-w-[280px]"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             >
@@ -670,62 +644,8 @@ function SettingsPage() {
                 })}
               </div>
               <button type="button" className="copy-hint" onClick={copyMonday}>
-                Copy Monday's hours to Tue-Fri
+                Copy Monday's hours to other weekdays
               </button>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ Skills ═══ */}
-        <section className="section">
-          <div className="section-head">
-            <h2>Skills</h2>
-            <span className="hint">helps teammates find the right person</span>
-          </div>
-
-          <div className="row">
-            <div className="row-label">
-              <b>What you can help with</b>
-              <p>Shows on your team-page profile.</p>
-            </div>
-            <div>
-              <div className="skills-wrap">
-                {skills.map((s) => (
-                  <span key={s} className="skill-pill">
-                    {s}
-                    <button
-                      type="button"
-                      aria-label={`Remove ${s}`}
-                      onClick={() => setSkills(skills.filter((x) => x !== s))}
-                    >
-                      ✕
-                    </button>
-                  </span>
-                ))}
-                {skills.length === 0 && (
-                  <span className="text-xs" style={{ color: "var(--ink-muted)" }}>
-                    No skills yet.
-                  </span>
-                )}
-              </div>
-              <div className="skill-row">
-                <input
-                  type="text"
-                  placeholder="Add a skill…"
-                  aria-label="Add a skill"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addSkill();
-                    }
-                  }}
-                />
-                <button type="button" className="btn-add" onClick={addSkill}>
-                  Add
-                </button>
-              </div>
             </div>
           </div>
         </section>
