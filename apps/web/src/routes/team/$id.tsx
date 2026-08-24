@@ -2,6 +2,7 @@ import { expandOccurrences, type Recurrence, recurrenceLabel } from "@kairos/api
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { type ScheduleOccurrence, ScheduleView } from "@/components/calendar/schedule-view";
 import { ErrorStrip, Skeleton } from "@/components/states";
 import { weekStartOf } from "@/utils/dates";
 import { orpc } from "@/utils/orpc";
@@ -45,8 +46,6 @@ const shift = (d: Date, days: number) => {
   x.setDate(x.getDate() + days);
   return x;
 };
-const dayKey = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
 function fmtRange(a: Date, b: Date) {
   const o = { month: "short", day: "numeric" } as const;
@@ -54,10 +53,6 @@ function fmtRange(a: Date, b: Date) {
     ? `${a.toLocaleDateString("en-US", o)}-${b.getDate()}, ${b.getFullYear()}`
     : `${a.toLocaleDateString("en-US", o)} - ${b.toLocaleDateString("en-US", o)}, ${b.getFullYear()}`;
 }
-const nowDecimal = () => {
-  const n = new Date();
-  return n.getHours() + n.getMinutes() / 60;
-};
 
 type SavedEvent = {
   id: string;
@@ -103,23 +98,31 @@ function MemberPage() {
     () => Array.from({ length: 7 }, (_, i) => shift(weekStart, i)),
     [weekStart],
   );
-  const today = new Date();
+  const [today] = useState(() => new Date());
   const todayIdx = weekDates.findIndex((d) => sameDay(d, today));
   const isCurrentWeek = todayIdx >= 0;
-  const nowTop = (nowDecimal() - START_HOUR) * HOUR_H;
+  const nowTop = useMemo(() => {
+    const dec = today.getHours() + today.getMinutes() / 60;
+    return (dec - START_HOUR) * HOUR_H;
+  }, [today]);
 
   /* ── visible range per view ── */
   const range = useMemo(() => {
-    if (view === "day")
+    if (view === "day") {
+      const dayStart = new Date(anchor);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(anchor);
+      dayEnd.setHours(23, 59, 59, 999);
       return {
-        start: anchor,
-        end: anchor,
+        start: dayStart,
+        end: dayEnd,
         label: anchor.toLocaleDateString("en-US", {
           weekday: "long",
           month: "short",
           day: "numeric",
         }),
       };
+    }
     if (view === "week")
       return {
         start: weekDates[0],
@@ -183,8 +186,13 @@ function MemberPage() {
   }, [view, isCurrentWeek, nowTop]);
 
   /* ── keyboard shortcuts ── */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyboard shortcuts use stable callbacks
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && popover) {
+        setPopover(null);
+        return;
+      }
       const t = e.target as HTMLElement;
       if (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA") return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -199,9 +207,13 @@ function MemberPage() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, [popover]);
 
-  const isLoading = member.isLoading || memberEvents.isLoading || workingHours.isLoading;
+  useEffect(() => {
+    setPopover(null);
+  }, []);
+
+  const isLoading = member.isLoading || memberEvents.isLoading;
   const pageError = member.error || memberEvents.error;
 
   if (isLoading) {
@@ -382,7 +394,11 @@ function MemberPage() {
             {m.email}
           </a>
           {m.timezone && (
-            <p className="text-[12px]" style={{ color: "var(--ink-muted)" }}>
+            <p
+              className="text-[12px]"
+              style={{ color: "var(--ink-muted)" }}
+              suppressHydrationWarning
+            >
               {new Intl.DateTimeFormat("en-US", {
                 hour: "numeric",
                 minute: "2-digit",
@@ -441,22 +457,29 @@ function MemberPage() {
             {viewBtn("month", "Month")}
             {viewBtn("schedule", "Schedule")}
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Previous"
-              onClick={() => navigate(-1)}
-              className="wk-btn"
-            >
-              ‹
-            </button>
-            <button type="button" onClick={goToday} className="wk-today">
-              Today
-            </button>
-            <button type="button" aria-label="Next" onClick={() => navigate(1)} className="wk-btn">
-              ›
-            </button>
-          </div>
+          {view !== "schedule" && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Previous"
+                onClick={() => navigate(-1)}
+                className="wk-btn"
+              >
+                ‹
+              </button>
+              <button type="button" onClick={goToday} className="wk-today">
+                Today
+              </button>
+              <button
+                type="button"
+                aria-label="Next"
+                onClick={() => navigate(1)}
+                className="wk-btn"
+              >
+                ›
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="px-6 lg:px-7">
@@ -580,7 +603,7 @@ function MemberPage() {
                           {isToday && isCurrentWeek && (
                             <div
                               className="absolute left-0 right-0 z-20 pointer-events-none"
-                              style={{ top: (nowDecimal() - START_HOUR) * HOUR_H }}
+                              style={{ top: nowTop }}
                             >
                               <span
                                 className="absolute -left-1 -top-1 w-2 h-2 rounded-full"
@@ -638,11 +661,10 @@ function MemberPage() {
                               key={o.ev.id + String(o.start.getTime()) + i}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const rect = gridRef.current?.getBoundingClientRect();
                                 setPopover({
                                   occ: { start: o.start, end: o.end, ev: o.ev },
-                                  x: e.clientX - (rect?.left ?? 0),
-                                  y: e.clientY - (rect?.top ?? 0),
+                                  x: e.clientX,
+                                  y: e.clientY,
                                 });
                               }}
                               className="absolute left-1 right-1.5 rounded-lg px-2.5 py-1.5 text-xs overflow-hidden border text-left hover:brightness-95"
@@ -688,12 +710,14 @@ function MemberPage() {
                     >
                       <div
                         data-popover-panel
-                        className="absolute rounded-xl border shadow-lg p-4 w-64"
+                        role="dialog"
+                        aria-label={`Details for ${popover.occ.ev.title}`}
+                        className="fixed rounded-xl border shadow-lg p-4 w-64"
                         style={{
                           background: "var(--card)",
                           borderColor: "var(--color-border)",
-                          left: Math.min(popover.x, (gridRef.current?.clientWidth ?? 600) - 280),
-                          top: popover.y + 8,
+                          left: Math.min(popover.x, window.innerWidth - 280),
+                          top: Math.min(popover.y + 8, window.innerHeight - 200),
                         }}
                       >
                         <div className="flex items-start gap-2">
@@ -838,73 +862,12 @@ function MemberPage() {
             })()}
 
           {/* ═══ SCHEDULE ═══ */}
-          {view === "schedule" &&
-            (() => {
-              const groups = new Map<string, typeof occurrences>();
-              for (const o of occurrences) {
-                const k = dayKey(o.start);
-                if (!groups.has(k)) groups.set(k, []);
-                groups.get(k)!.push(o);
-              }
-              const keys = [...groups.keys()].sort();
-              if (keys.length === 0)
-                return (
-                  <div className="py-20 text-center text-sm" style={{ color: "var(--ink-muted)" }}>
-                    No events for {m.name.split(" ")[0]} in the next 60 days.
-                  </div>
-                );
-              return (
-                <div className="max-w-2xl">
-                  {keys.map((k) => {
-                    const list = groups.get(k)!;
-                    const d = list[0].start;
-                    return (
-                      <div key={k} className="mb-7">
-                        <div
-                          className="flex items-baseline gap-3 border-b pb-2 mb-2"
-                          style={{ borderColor: "var(--color-border-strong)" }}
-                        >
-                          <span
-                            className="font-serif-display italic text-[13px]"
-                            style={{ color: "var(--ember)" }}
-                          >
-                            {d.toLocaleDateString("en-US", { weekday: "long" })}
-                          </span>
-                          <span className="font-serif-display text-[15px] font-semibold">
-                            {d.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-                          </span>
-                        </div>
-                        {list.map((o, i) => (
-                          <div
-                            // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                            key={i}
-                            className="flex items-center gap-3 w-full text-left py-2 px-2 rounded-lg"
-                          >
-                            <span
-                              className="font-mono text-[10px] w-20 shrink-0"
-                              style={{ color: "var(--ink-muted)" }}
-                            >
-                              {fmt12(o.start.getHours(), o.start.getMinutes())}
-                            </span>
-                            <span
-                              className="w-[3px] self-stretch rounded"
-                              style={{ background: o.ev.color }}
-                            />
-                            <span>
-                              <b className="block text-[12.5px] font-semibold">{o.ev.title}</b>
-                              <span className="text-[11px]" style={{ color: "var(--ink-muted)" }}>
-                                until {fmt12(o.end.getHours(), o.end.getMinutes())}
-                                {o.ev.recurrence !== "none" ? ` · ${recurrenceLabel(o.ev)}` : ""}
-                              </span>
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
+          {view === "schedule" && (
+            <ScheduleView
+              occurrences={occurrences as ScheduleOccurrence[]}
+              emptyMessage={`No events for ${m.name.split(" ")[0]} in the next 60 days.`}
+            />
+          )}
         </div>
 
         <p className="px-6 lg:px-7 pb-4 text-xs" style={{ color: "var(--ink-muted)" }}>

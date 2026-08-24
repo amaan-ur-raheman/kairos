@@ -110,6 +110,26 @@ describe("availabilityRouter", () => {
       expect(err.code).toBe("BAD_REQUEST");
     });
 
+    test("rejects invalid clock times at the procedure boundary", async () => {
+      const setWorkingHours = clientOf(availabilityRouter.setWorkingHours);
+      const err = await setWorkingHours(
+        { hours: [{ ...validDay, startTime: "25:00" }] },
+        memberCtx(),
+      ).catch((e) => e);
+
+      expect(err).toMatchObject({ code: "BAD_REQUEST" });
+    });
+
+    test("rejects duplicate days in a working-hours replacement", async () => {
+      const setWorkingHours = clientOf(availabilityRouter.setWorkingHours);
+      const err = await setWorkingHours(
+        { hours: [validDay, { ...validDay, endTime: "18:00" }] },
+        memberCtx(),
+      ).catch((e) => e);
+
+      expect(err).toMatchObject({ code: "BAD_REQUEST" });
+    });
+
     test("replaces existing hours for self by default", async () => {
       onSelect(membersTable, [{ id: MEMBER_ID }]); // assertEditableMember
       const setWorkingHours = clientOf(availabilityRouter.setWorkingHours);

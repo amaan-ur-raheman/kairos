@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/tanstack-react-start";
+import { useClerk } from "@clerk/tanstack-react-start";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { ErrorStrip, Skeleton } from "@/components/states";
@@ -128,6 +128,7 @@ function SkeletonRows() {
 }
 
 function EmptyTeam() {
+  const clerk = useClerk();
   return (
     <div className="frame-empty text-center py-14">
       <div
@@ -151,6 +152,7 @@ function EmptyTeam() {
         type="button"
         className="text-[13px] font-semibold hover:underline"
         style={{ color: "var(--ember)" }}
+        onClick={() => clerk.openOrganizationProfile()}
       >
         Invite your first teammate →
       </button>
@@ -160,7 +162,6 @@ function EmptyTeam() {
 
 function TeamPage() {
   const location = useLocation();
-  const { orgId } = useAuth();
   const members = useQuery(orpc.members.list.queryOptions());
   const statuses = useQuery(orpc.availability.getForOrg.queryOptions());
 
@@ -219,24 +220,33 @@ function TeamPage() {
   ).length;
 
   const lede = (
-    <p
-      className="lede font-serif-display text-[16px] mt-2.5 max-w-[56ch]"
-      style={{ color: "var(--ink-secondary)" }}
-    >
-      <b style={{ color: "var(--st-available)", fontWeight: 600 }}>
+    <p className="lede font-serif-display text-[16px] mt-2.5 max-w-[56ch]">
+      <span style={{ color: "var(--st-available)", fontWeight: 600 }}>
         {available.length} {available.length === 1 ? "teammate is" : "teammates are"} available
-        right now.
-      </b>{" "}
-      {focused > 0 &&
-        `${focused} ${focused === 1 ? "is" : "are"} heads-down in focus or meetings. `}
-      {rest.length > 0 && `${rest.length} ${rest.length === 1 ? "is" : "are"} away.`}
+      </span>
+      {focused > 0 && (
+        <>
+          {" · "}
+          <span style={{ color: "var(--status-in-meeting)", fontWeight: 600 }}>
+            {focused} {focused === 1 ? "is" : "are"} focused
+          </span>
+        </>
+      )}
+      {rest.length > 0 && (
+        <>
+          {" · "}
+          <span style={{ color: "var(--ink-muted)", fontWeight: 600 }}>
+            {rest.length} {rest.length === 1 ? "is" : "are"} away
+          </span>
+        </>
+      )}
     </p>
   );
 
   return (
     <div className="page-team">
-      <span className="kicker">
-        {orgId ? "Your workspace" : "Kairos"} ·{" "}
+      <span className="kicker" suppressHydrationWarning>
+        {members.data?.[0]?.organizationId ? "Kairos" : "Your team"} ·{" "}
         {new Date().toLocaleDateString("en-US", {
           weekday: "long",
           month: "short",
@@ -264,78 +274,78 @@ function TeamPage() {
       )}
 
       {/* ── Focused & away ── */}
-      {rest.length > 0 && (
-        <>
-          <div className="section-rule">
-            <h2>Focused &amp; away</h2>
-            <span>{rest.length} PEOPLE</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <caption className="sr-only">Teammates currently focused, busy, or away</caption>
-              <thead>
-                <tr>
-                  <th scope="col" style={{ width: "38%" }}>
-                    Member
-                  </th>
-                  <th scope="col" style={{ width: "24%" }}>
-                    Status
-                  </th>
-                  <th scope="col" style={{ width: "22%" }}>
-                    Note
-                  </th>
-                  <th scope="col">Local time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rest.map((m) => {
-                  const st = statusMeta(statusMap.get(m.id)?.status);
-                  const note = statusMap.get(m.id)?.note ?? null;
-                  return (
-                    <tr key={m.id}>
-                      <td>
-                        <Link to="/team/$id" params={{ id: m.id }} className="cell-person">
-                          <span className="avatar-sm" style={{ background: st.color }}>
-                            {initials(m.name)}
-                            <i className="st-dot" style={{ background: st.color }} />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block text-[13px] font-semibold truncate">
-                              {m.name}
-                            </span>
-                            <span
-                              className="block text-[11.5px] truncate"
-                              style={{ color: "var(--ink-muted)" }}
-                            >
-                              {m.jobRole ?? m.email}
-                            </span>
-                          </span>
-                        </Link>
-                      </td>
-                      <td>
-                        <span className="inline-flex items-center gap-2 text-[12.5px] font-medium">
-                          <i className="w-2 h-2 rounded-full" style={{ background: st.color }} />
-                          {st.label}
+      <div className="section-rule">
+        <h2>Focused &amp; away</h2>
+        <span>{rest.length} PEOPLE</span>
+      </div>
+      {rest.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-[480px]">
+            <caption className="sr-only">Teammates currently focused, busy, or away</caption>
+            <thead>
+              <tr>
+                <th scope="col" style={{ width: "38%" }}>
+                  Member
+                </th>
+                <th scope="col" style={{ width: "24%" }}>
+                  Status
+                </th>
+                <th scope="col" style={{ width: "22%" }}>
+                  Note
+                </th>
+                <th scope="col">Local time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rest.map((m) => {
+                const st = statusMeta(statusMap.get(m.id)?.status);
+                const note = statusMap.get(m.id)?.note ?? null;
+                return (
+                  <tr key={m.id}>
+                    <td>
+                      <Link to="/team/$id" params={{ id: m.id }} className="cell-person">
+                        <span className="avatar-sm" style={{ background: st.color }}>
+                          {initials(m.name)}
+                          <i className="st-dot" style={{ background: st.color }} />
                         </span>
-                      </td>
-                      <td>
-                        <span
-                          className="font-serif-display italic text-[12.5px]"
-                          style={{ color: "var(--ink-muted)" }}
-                        >
-                          {note ?? ""}
+                        <span className="min-w-0">
+                          <span className="block text-[13px] font-semibold truncate">{m.name}</span>
+                          <span
+                            className="block text-[11.5px] truncate"
+                            style={{ color: "var(--ink-muted)" }}
+                          >
+                            {m.jobRole ?? m.email}
+                          </span>
                         </span>
-                      </td>
-                      <td className="tz-cell">
-                        {localTime(m.timezone)} · {utcOffset(m.timezone)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </>
+                      </Link>
+                    </td>
+                    <td>
+                      <span className="inline-flex items-center gap-2 text-[12.5px] font-medium">
+                        <i className="w-2 h-2 rounded-full" style={{ background: st.color }} />
+                        {st.label}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className="font-serif-display italic text-[12.5px]"
+                        style={{ color: "var(--ink-muted)" }}
+                      >
+                        {note ?? ""}
+                      </span>
+                    </td>
+                    <td className="tz-cell">
+                      {localTime(m.timezone)} · {utcOffset(m.timezone)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-[13px] py-4" style={{ color: "var(--ink-muted)" }}>
+          Everyone's available right now.
+        </p>
       )}
     </div>
   );
@@ -357,6 +367,7 @@ function MemberCard({ member: m, note }: { member: Member; note: string | null }
           <span
             className="block font-serif-display italic text-xs mt-0.5 truncate"
             style={{ color: "var(--ink-muted)" }}
+            title={note}
           >
             {note}
           </span>

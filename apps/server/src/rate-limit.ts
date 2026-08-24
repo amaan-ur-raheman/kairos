@@ -1,3 +1,4 @@
+import { env } from "@kairos/env/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
@@ -13,11 +14,11 @@ const RATE_WINDOW_S = 60;
  * in front of this as well.
  */
 const redisLimiter =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
     ? new Ratelimit({
         redis: new Redis({
-          url: process.env.UPSTASH_REDIS_REST_URL,
-          token: process.env.UPSTASH_REDIS_REST_TOKEN,
+          url: env.UPSTASH_REDIS_REST_URL,
+          token: env.UPSTASH_REDIS_REST_TOKEN,
         }),
         limiter: Ratelimit.slidingWindow(RATE_LIMIT, `${RATE_WINDOW_S} s`),
         prefix: "kairos:rpc",

@@ -36,6 +36,7 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "check-types": "turbo run check-types",
+    "typecheck": "turbo run check-types",
     "dev:native": "turbo run dev -F native --",
     "dev:web": "turbo run dev -F web --",
     "dev:server": "turbo run dev -F server --",
@@ -50,7 +51,8 @@
     "env:production": "tsx scripts/sync-vercel-env.ts production",
     "deploy": "vercel deploy",
     "deploy:prod": "vercel deploy --prod",
-    "deploy:check": "vercel deploy --dry"
+    "deploy:check": "vercel deploy --dry",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@kairos/env": "workspace:*",

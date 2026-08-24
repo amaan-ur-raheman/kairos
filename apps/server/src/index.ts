@@ -38,6 +38,16 @@ const app = new Elysia()
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
   )
+  // Security headers for local dev (Vercel sets these via vercel.json in prod)
+  .onAfterHandle(({ set }) => {
+    set.headers["X-Content-Type-Options"] = "nosniff";
+    set.headers["X-Frame-Options"] = "DENY";
+    set.headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    set.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    if (env.VERCEL) {
+      set.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+    }
+  })
   .all(
     "/rpc*",
     async (context) => {
@@ -93,7 +103,7 @@ export default app;
 
 // Elysia's default export is not auto-served by Bun or Node, so start a local
 // server outside Vercel while still exporting the app for Vercel functions.
-if (!process.env.VERCEL) {
+if (!env.VERCEL) {
   app.listen(3000, () => {
     console.log("Server is running on http://localhost:3000");
   });

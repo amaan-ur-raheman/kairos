@@ -7,6 +7,7 @@ import z from "zod";
 import { orgProcedure } from "../index";
 
 const nanoid = () => crypto.randomUUID();
+const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Must be a valid HH:MM time");
 
 async function assertEditableMember(memberId: string, organizationId: string) {
   const rows = await db
@@ -36,9 +37,9 @@ export const availabilityRouter = {
   setStatus: orgProcedure
     .input(
       z.object({
-        memberId: z.string().optional(), // defaults to self
+        memberId: z.string().trim().min(1).optional(), // defaults to self
         status: z.enum(["available", "busy", "in_meeting", "focus_time", "traveling", "offline"]),
-        note: z.string().max(500).optional(),
+        note: z.string().trim().max(500).optional(),
         expiresAt: z.string().datetime().optional(),
       }),
     )
@@ -64,19 +65,33 @@ export const availabilityRouter = {
 
   setWorkingHours: orgProcedure
     .input(
-      z.object({
-        memberId: z.string().optional(),
-        hours: z
-          .array(
-            z.object({
-              dayOfWeek: z.number().min(0).max(6),
-              startTime: z.string().regex(/^\d{2}:\d{2}$/, "Must be HH:MM"),
-              endTime: z.string().regex(/^\d{2}:\d{2}$/, "Must be HH:MM"),
-              isWorkingDay: z.boolean(),
-            }),
-          )
-          .min(1),
-      }),
+      z
+        .object({
+          memberId: z.string().trim().min(1).optional(),
+          hours: z
+            .array(
+              z.object({
+                dayOfWeek: z.number().min(0).max(6),
+                startTime: timeSchema,
+                endTime: timeSchema,
+                isWorkingDay: z.boolean(),
+              }),
+            )
+            .min(1),
+        })
+        .superRefine((input, ctx) => {
+          const seen = new Set<number>();
+          input.hours.forEach((hour, index) => {
+            if (seen.has(hour.dayOfWeek)) {
+              ctx.addIssue({
+                code: "custom",
+                path: ["hours", index, "dayOfWeek"],
+                message: "Each day of the week may appear only once",
+              });
+            }
+            seen.add(hour.dayOfWeek);
+          });
+        }),
     )
     .handler(async ({ input, context }) => {
       for (const h of input.hours) {
@@ -106,7 +121,7 @@ export const availabilityRouter = {
     }),
 
   getWorkingHours: orgProcedure
-    .input(z.object({ memberId: z.string().optional() }))
+    .input(z.object({ memberId: z.string().trim().optional() }))
     .handler(async ({ input, context }) => {
       const memberId = input.memberId ?? context.auth!.memberId!;
       // Read is org-wide, but the target must belong to the caller's org

@@ -10,6 +10,7 @@
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate:deploy": "drizzle-kit migrate",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@kairos/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
+    "pg": "^8.23.0",
     "typescript": "^6.0.3"
   }
 }

@@ -1,16 +1,10 @@
-import { expandOccurrences, type Recurrence, recurrenceLabel } from "@kairos/api/lib/recurrence";
+import { expandOccurrences, type Recurrence } from "@kairos/api/lib/recurrence";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  DAY_FULL,
-  DAYS,
-  END_HOUR,
-  HOUR_H,
-  START_HOUR,
-  tintFor,
-  type View,
-} from "@/components/calendar/constants";
+import { Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import type { View } from "@/components/calendar/constants";
 import {
   dayKey,
   fmt12,
@@ -21,33 +15,45 @@ import {
   sameDay,
   shift,
 } from "@/components/calendar/date-utils";
+import { DayWeekView } from "@/components/calendar/day-week-view";
 import { EventDialog } from "@/components/calendar/event-dialog";
+import { EventPopover } from "@/components/calendar/event-popover";
+import { MonthView } from "@/components/calendar/month-view";
+import { type ScheduleOccurrence, ScheduleView } from "@/components/calendar/schedule-view";
+import type { SavedEvent } from "@/components/calendar/types";
 import { ErrorStrip, Skeleton } from "@/components/states";
 import { weekStartOf } from "@/utils/dates";
 import { orpc } from "@/utils/orpc";
 import { statusMeta } from "@/utils/status";
 
 export const Route = createFileRoute("/calendar")({
+  validateSearch: (search: Record<string, unknown>): { view?: View; d?: string } => ({
+    view: ["day", "week", "month", "schedule"].includes(search.view as string)
+      ? (search.view as View)
+      : undefined,
+    d: typeof search.d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(search.d) ? search.d : undefined,
+  }),
   component: CalendarPage,
 });
-
-type SavedEvent = {
-  id: string;
-  title: string;
-  startTime: string | Date;
-  endTime: string | Date;
-  color: string;
-  recurrence: string;
-  recurrenceDays: number[] | null;
-  recurrenceInterval: number | null;
-  recurrenceUntil: string | Date | null;
-};
 
 /* ═══════════════ component ═══════════════ */
 function CalendarPage() {
   const queryClient = useQueryClient();
-  const [view, setView] = useState<View>("week");
-  const [anchor, setAnchor] = useState(() => new Date());
+  const search = Route.useSearch();
+  const routeNavigate = Route.useNavigate();
+
+  // View + anchor date live in the URL (?view=week&d=2026-08-24) so refresh/share preserve context
+  const view: View = search.view ?? "week";
+  const anchor = useMemo(() => {
+    if (!search.d) return new Date();
+    const [y, m, d] = search.d.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }, [search.d]);
+  const setView = (v: View) =>
+    routeNavigate({ search: (prev) => ({ ...prev, view: v }), replace: true });
+  const setAnchor = (a: Date) =>
+    routeNavigate({ search: (prev) => ({ ...prev, d: dayKey(a) }), replace: true });
+
   const [dialog, setDialog] = useState<
     | null
     | { mode: "create"; date: Date; start: string; end: string }
@@ -60,16 +66,12 @@ function CalendarPage() {
     y: number;
   } | null>(null);
   // drag-to-create state
-  const [drag, setDrag] = useState<{
+  const [drag, _setDrag] = useState<{
     day: Date;
     startMin: number;
     endMin: number;
     col: number;
   } | null>(null);
-  const dragRef = useRef<{ day: Date; startMin: number; colEl: HTMLElement } | null>(null);
-  // mirrors drag state so window listeners can read it without stale closures
-  const dragStateRef = useRef<{ startMin: number; endMin: number; day: Date } | null>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
 
   const me = useQuery(orpc.members.me.queryOptions());
   const workingHours = useQuery(orpc.availability.getWorkingHours.queryOptions({ input: {} }));
@@ -104,6 +106,46 @@ function CalendarPage() {
     }),
   );
 
+  // Destructive action gets an undo window instead of a hard confirm
+  const deleteWithUndo = (ev: SavedEvent) => {
+    deleteEvent.mutate(
+      { id: ev.id },
+      {
+        onSuccess: () => {
+          toast("Event deleted", {
+            description: ev.title,
+            duration: 6000,
+            action: {
+              label: "Undo",
+              onClick: () => {
+                createEvent.mutate({
+                  title: ev.title,
+                  start:
+                    typeof ev.startTime === "string"
+                      ? ev.startTime
+                      : (ev.startTime as Date).toISOString(),
+                  end:
+                    typeof ev.endTime === "string"
+                      ? ev.endTime
+                      : (ev.endTime as Date).toISOString(),
+                  color: ev.color,
+                  recurrence: ev.recurrence as Recurrence,
+                  recurrenceDays: ev.recurrenceDays ?? [],
+                  recurrenceInterval: ev.recurrenceInterval ?? 1,
+                  recurrenceUntil: ev.recurrenceUntil
+                    ? typeof ev.recurrenceUntil === "string"
+                      ? ev.recurrenceUntil
+                      : (ev.recurrenceUntil as Date).toISOString()
+                    : undefined,
+                });
+              },
+            },
+          });
+        },
+      },
+    );
+  };
+
   const meId = me.data?.id ?? null;
   const myStatus = statuses.data?.find((s) => s.memberId === meId) ?? null;
 
@@ -112,20 +154,31 @@ function CalendarPage() {
     () => Array.from({ length: 7 }, (_, i) => shift(weekStart, i)),
     [weekStart],
   );
-  const today = new Date();
+  const [today] = useState(() => new Date());
+  const [nowTick, setNowTick] = useState(() => nowDecimal());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(nowDecimal()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const nowDecimalVal = nowTick;
 
   /* ── visible range per view ── */
   const range: { start: Date; end: Date; label: string } = useMemo(() => {
-    if (view === "day")
+    if (view === "day") {
+      const dayStart = new Date(anchor);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(anchor);
+      dayEnd.setHours(23, 59, 59, 999);
       return {
-        start: anchor,
-        end: anchor,
+        start: dayStart,
+        end: dayEnd,
         label: anchor.toLocaleDateString("en-US", {
           weekday: "long",
           month: "short",
           day: "numeric",
         }),
       };
+    }
     if (view === "week")
       return {
         start: weekDates[0],
@@ -149,7 +202,7 @@ function CalendarPage() {
   const navigate = (dir: -1 | 1) => {
     const step =
       view === "day" ? dir : view === "week" ? dir * 7 : view === "month" ? dir * 30 : dir * 7;
-    setAnchor((a) => shift(a, step));
+    setAnchor(shift(anchor, step));
   };
   const goToday = () => setAnchor(new Date());
 
@@ -191,6 +244,9 @@ function CalendarPage() {
       });
     for (const o of occurrences) {
       if (!sameDay(o.start, today)) continue;
+      // Only events that haven't finished yet — the rail is "next up", not a diary
+      const endDec = o.end.getHours() + o.end.getMinutes() / 60;
+      if (endDec < nowDecimalVal) continue;
       items.push({
         time: fmt12(o.start.getHours(), o.start.getMinutes()),
         sort: o.start.getHours() + o.start.getMinutes() / 60,
@@ -200,7 +256,7 @@ function CalendarPage() {
       });
     }
     return items.sort((a, b) => a.sort - b.sort).slice(0, 4);
-  }, [occurrences, workingHours.data, today]);
+  }, [occurrences, workingHours.data, today, nowDecimalVal]);
 
   const teamPulse = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -241,9 +297,33 @@ function CalendarPage() {
     return { spans, days };
   }, [leaves.data, weekDates, view, range.start]);
 
+  const scheduleLeaves = useMemo(() => {
+    const from = dayKey(range.start);
+    const to = dayKey(range.end);
+    return (leaves.data ?? [])
+      .filter((lr) => lr.status === "approved" && lr.endDate >= from && lr.startDate <= to)
+      .map((lr) => ({
+        id: lr.id,
+        label: lr.type,
+        startDate: lr.startDate < from ? from : lr.startDate,
+        endDate: lr.endDate > to ? to : lr.endDate,
+      }));
+  }, [leaves.data, range.end, range.start]);
+
   /* ── keyboard shortcuts ── */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyboard shortcuts use stable callbacks
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (dialog) {
+          setDialog(null);
+          return;
+        }
+        if (popover) {
+          setPopover(null);
+          return;
+        }
+      }
       const t = e.target as HTMLElement;
       if (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA") return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -260,14 +340,28 @@ function CalendarPage() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, [dialog, popover, me.data, range.start]);
 
-  const isLoading =
-    me.isLoading || statuses.isLoading || workingHours.isLoading || savedEvents.isLoading;
-  const pageError = me.error || statuses.error || workingHours.error || savedEvents.error;
+  // Only block the grid on essential data; rail data (statuses/workingHours) can stream in
+  const isLoading = me.isLoading || savedEvents.isLoading;
+  const pageError = me.error || savedEvents.error;
+  const railLoading = statuses.isLoading || workingHours.isLoading;
+
+  // Dismiss popover when navigating views/dates
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setPopover is a stable setState
+  useEffect(() => {
+    setPopover(null);
+  }, [view, anchor]);
 
   const viewBtn = (v: View, label: string) => (
-    <button type="button" key={v} onClick={() => setView(v)} className={view === v ? "on" : ""}>
+    <button
+      type="button"
+      key={v}
+      role="tab"
+      aria-selected={view === v}
+      onClick={() => setView(v)}
+      className={view === v ? "on" : ""}
+    >
       {label}
     </button>
   );
@@ -280,13 +374,24 @@ function CalendarPage() {
         className="hidden lg:flex flex-col w-[296px] shrink-0 border-r overflow-y-auto px-6 py-7"
         style={{ background: "var(--card)", borderColor: "var(--color-border)" }}
       >
-        <span className="font-serif-display italic text-[13px]" style={{ color: "var(--ember)" }}>
+        <span
+          className="font-serif-display italic text-[13px]"
+          style={{ color: "var(--ember)" }}
+          suppressHydrationWarning
+        >
           {today.toLocaleDateString("en-US", { weekday: "long", month: "long" })}
         </span>
-        <div className="font-serif-display font-semibold text-[44px] leading-none mt-0.5">
+        <div
+          className="font-serif-display font-semibold text-[44px] leading-none mt-0.5"
+          suppressHydrationWarning
+        >
           {today.getDate()}
         </div>
-        <p className="text-[12.5px] mt-1" style={{ color: "var(--ink-muted)" }}>
+        <p
+          className="text-[12.5px] mt-1"
+          style={{ color: "var(--ink-muted)" }}
+          suppressHydrationWarning
+        >
           Week {isoWeek(today)} ·{" "}
           {(statuses.data ?? []).filter((s) => s.status === "available").length} of{" "}
           {(statuses.data ?? []).length} teammates available
@@ -294,47 +399,60 @@ function CalendarPage() {
 
         <section className="mt-6">
           <h2 className="rail-label">Your status</h2>
-          <div
-            className="border p-3.5"
-            style={{
-              borderColor: "var(--color-border)",
-              borderRadius: "var(--r-md, 12px)",
-              background: "var(--paper)",
-            }}
-          >
-            {myStatus ? (
-              <>
-                <div className="flex items-center gap-2.5">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ background: statusMeta(myStatus.status).color }}
-                  />
-                  <span className="text-[13.5px] font-semibold">
-                    {statusMeta(myStatus.status).label}
-                  </span>
-                </div>
-                {myStatus.note && (
-                  <p
-                    className="font-serif-display italic text-[12.5px] mt-1.5"
-                    style={{ color: "var(--ink-secondary)" }}
-                  >
-                    “{myStatus.note}”
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
-                No status set
-              </p>
-            )}
-            <Link
-              to="/settings"
-              className="inline-block mt-3 text-xs font-medium hover:underline"
-              style={{ color: "var(--ember)" }}
+          {railLoading && !myStatus ? (
+            <div
+              className="border p-3.5"
+              style={{
+                borderColor: "var(--color-border)",
+                borderRadius: "var(--r-md, 12px)",
+                background: "var(--paper)",
+              }}
             >
-              Change status →
-            </Link>
-          </div>
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ) : (
+            <div
+              className="border p-3.5"
+              style={{
+                borderColor: "var(--color-border)",
+                borderRadius: "var(--r-md, 12px)",
+                background: "var(--paper)",
+              }}
+            >
+              {myStatus ? (
+                <>
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ background: statusMeta(myStatus.status).color }}
+                    />
+                    <span className="text-[13.5px] font-semibold">
+                      {statusMeta(myStatus.status).label}
+                    </span>
+                  </div>
+                  {myStatus.note && (
+                    <p
+                      className="font-serif-display italic text-[12.5px] mt-1.5"
+                      style={{ color: "var(--ink-secondary)" }}
+                    >
+                      “{myStatus.note}”
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
+                  No status set
+                </p>
+              )}
+              <Link
+                to="/settings"
+                className="inline-block mt-3 text-xs font-medium hover:underline"
+                style={{ color: "var(--ember)" }}
+              >
+                Change status →
+              </Link>
+            </div>
+          )}
         </section>
 
         <section className="mt-6">
@@ -344,10 +462,9 @@ function CalendarPage() {
               Nothing scheduled today.
             </p>
           ) : (
-            nextUp.map((n, i) => (
+            nextUp.map((n) => (
               <div
-                // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                key={i}
+                key={`${n.label}-${n.time}`}
                 className="flex gap-3 py-2 border-b last:border-b-0"
                 style={{ borderColor: "var(--color-border-subtle)" }}
               >
@@ -386,37 +503,50 @@ function CalendarPage() {
       {/* ══ main pane ══ */}
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* toolbar */}
-        <div className="flex items-center gap-3 px-6 lg:px-7 pt-6 pb-4 shrink-0 flex-wrap">
-          <h1 className="font-serif-display text-[23px] font-semibold m-0">
+        <div
+          className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 lg:px-7 pt-4 sm:pt-6 pb-3 sm:pb-4 shrink-0 overflow-x-auto"
+          title="Shortcuts: D day · W week · M month · S schedule · T today · ←/→ navigate · C create"
+        >
+          <h1 className="font-serif-display text-[19px] sm:text-[23px] font-semibold m-0 whitespace-nowrap">
             {view === "month"
               ? anchor.toLocaleDateString("en-US", { month: "long", year: "numeric" })
               : "Calendar"}
           </h1>
-          <span className="font-mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
+          <span
+            className="font-mono text-[11px] hidden sm:inline"
+            style={{ color: "var(--ink-muted)" }}
+          >
             {range.label}
           </span>
-          <div className="seg-views ml-auto">
+          <div className="seg-views ml-auto shrink-0" role="tablist" aria-label="Calendar view">
             {viewBtn("day", "Day")}
             {viewBtn("week", "Week")}
             {viewBtn("month", "Month")}
             {viewBtn("schedule", "Schedule")}
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Previous"
-              onClick={() => navigate(-1)}
-              className="wk-btn"
-            >
-              ‹
-            </button>
-            <button type="button" onClick={goToday} className="wk-today">
-              Today
-            </button>
-            <button type="button" aria-label="Next" onClick={() => navigate(1)} className="wk-btn">
-              ›
-            </button>
-          </div>
+          {view !== "schedule" && (
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Previous"
+                onClick={() => navigate(-1)}
+                className="wk-btn"
+              >
+                ‹
+              </button>
+              <button type="button" onClick={goToday} className="wk-today">
+                Today
+              </button>
+              <button
+                type="button"
+                aria-label="Next"
+                onClick={() => navigate(1)}
+                className="wk-btn"
+              >
+                ›
+              </button>
+            </div>
+          )}
           <button
             type="button"
             onClick={() =>
@@ -427,28 +557,21 @@ function CalendarPage() {
                 end: "10:00",
               })
             }
-            className="btn-ember press-scale"
+            className="btn-ember press-scale shrink-0 whitespace-nowrap"
           >
-            ＋ New event
+            <Plus size={14} />
+            <span className="hidden sm:inline">New event</span>
           </button>
-        </div>
-
-        <div className="px-6 lg:px-7">
-          <div className="kbd-hints">
-            Shortcuts: <b>D</b>ay · <b>W</b>eek · <b>M</b>onth · <b>S</b>chedule · <b>T</b>oday ·{" "}
-            <b>←</b>/<b>→</b> navigate · <b>C</b> create
-          </div>
         </div>
 
         {pageError && !isLoading && (
           <div className="px-6 lg:px-7 pt-4">
             <ErrorStrip
               message="Couldn't load your calendar."
-              onRetry={() =>
-                [me, statuses, workingHours, savedEvents].forEach((q) => {
-                  q.refetch();
-                })
-              }
+              onRetry={() => {
+                me.refetch();
+                savedEvents.refetch();
+              }}
             />
           </div>
         )}
@@ -468,611 +591,81 @@ function CalendarPage() {
         ) : (
           <div className="flex-1 min-h-0 overflow-auto px-6 lg:px-7 pb-6">
             {/* ═══ DAY / WEEK ═══ */}
-            {(view === "day" || view === "week") &&
-              (() => {
-                const days = view === "day" ? [range.start] : weekDates;
-                const cols = days.length;
-                return (
-                  <div ref={gridRef} style={{ minWidth: cols === 1 ? 0 : 720 }}>
-                    {/* all-day strip (leave) */}
-                    {leaveSpans.spans.length > 0 && days.length > 1 && (
-                      <div className="mb-2">
-                        <div
-                          className="grid"
-                          style={{ gridTemplateColumns: `48px repeat(${cols}, 1fr)` }}
-                        >
-                          <span
-                            className="font-mono text-[9px] pt-1"
-                            style={{ color: "var(--ink-muted)" }}
-                          >
-                            all day
-                          </span>
-                          {days.map((_, i) => (
-                            // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                            <div key={i} />
-                          ))}
-                        </div>
-                        <div
-                          className="grid relative"
-                          style={{ gridTemplateColumns: `48px repeat(${cols}, 1fr)` }}
-                        >
-                          <span />
-                          {days.map((_, i) => (
-                            <div
-                              // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                              key={i}
-                              className="border-l h-6"
-                              style={{ borderColor: "var(--color-border)" }}
-                            />
-                          ))}
-                          {leaveSpans.spans.map((sp) => (
-                            <div
-                              key={sp.id}
-                              className="absolute rounded-md border px-2 flex items-center text-[11px] font-medium z-10"
-                              style={{
-                                left: `calc(48px + ${(sp.startCol / cols) * 100}% + 4px)`,
-                                width: `calc(${((sp.endCol - sp.startCol + 1) / cols) * 100}% - 8px)`,
-                                top: 4,
-                                height: 22,
-                                background: "var(--tint-busy)",
-                                borderColor: "var(--color-border)",
-                                color: "var(--ink)",
-                              }}
-                            >
-                              <i
-                                className="inline-block w-[6px] h-[6px] rounded-full mr-1.5"
-                                style={{ background: "var(--status-busy)" }}
-                              />
-                              {sp.label}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div
-                      className="grid pb-2.5 sticky top-0 z-10 bg-[var(--paper)]"
-                      style={{ gridTemplateColumns: `48px repeat(${cols}, 1fr)` }}
-                    >
-                      <span />
-                      {days.map((d, i) => (
-                        // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                        <div key={i} className="text-center">
-                          <div
-                            className="font-serif-display italic text-[12.5px]"
-                            style={{
-                              color: sameDay(d, today) ? "var(--ember)" : "var(--ink-muted)",
-                            }}
-                          >
-                            {DAY_FULL[d.getDay()].slice(0, 3)}
-                          </div>
-                          <div
-                            className="font-mono text-[13px] w-7 h-7 leading-7 mx-auto mt-1 rounded-full"
-                            style={
-                              sameDay(d, today)
-                                ? { background: "var(--ember)", color: "#fff" }
-                                : { color: "var(--ink-secondary)" }
-                            }
-                          >
-                            {d.getDate()}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div
-                      className="grid relative border-t"
-                      style={{
-                        gridTemplateColumns: `48px repeat(${cols}, 1fr)`,
-                        borderColor: "var(--color-border)",
-                      }}
-                    >
-                      <div className="relative">
-                        {Array.from(
-                          { length: END_HOUR - START_HOUR },
-                          (_, i) => START_HOUR + i,
-                        ).map((h) => (
-                          <span
-                            key={h}
-                            className="absolute right-2.5 -translate-y-1/2 font-mono text-[9.5px]"
-                            style={{ top: (h - START_HOUR) * HOUR_H, color: "var(--ink-muted)" }}
-                          >
-                            {fmt12(h)}
-                          </span>
-                        ))}
-                      </div>
-
-                      {days.map((day, c) => {
-                        const isToday = sameDay(day, today);
-                        const weekend = day.getDay() === 0 || day.getDay() === 6;
-                        const dayOccs = occurrences
-                          .filter((o) => sameDay(o.start, day))
-                          .map((o) => {
-                            const s = o.start.getHours() + o.start.getMinutes() / 60;
-                            const e = o.end.getHours() + o.end.getMinutes() / 60;
-                            return { ...o, s, e: Math.max(e, s + 0.25) };
-                          })
-                          .sort((a, b) => a.s - b.s);
-
-                        // my status block
-                        if (myStatus && isToday) {
-                          const wh = (workingHours.data ?? []).find(
-                            (h) => h.dayOfWeek === day.getDay() && h.isWorkingDay,
-                          );
-                          const sh = wh ? parseHM(wh.startTime) : 9;
-                          dayOccs.push({
-                            ev: {
-                              id: "__status",
-                              title: statusMeta(myStatus.status).label,
-                              startTime: "",
-                              endTime: "",
-                              color: "var(--ember)",
-                              recurrence: "none",
-                              recurrenceDays: [],
-                              recurrenceInterval: 1,
-                              recurrenceUntil: null,
-                            },
-                            start: day,
-                            end: day,
-                            s: Math.max(sh, nowDecimal()),
-                            e: Math.min(nowDecimal() + 1.5, END_HOUR),
-                          });
-                        }
-
-                        return (
-                          // biome-ignore lint/a11y/noStaticElementInteractions: pointer-driven calendar grid
-                          <div
-                            // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                            key={c}
-                            className="relative border-l"
-                            style={{
-                              borderColor: "var(--color-border)",
-                              minHeight: (END_HOUR - START_HOUR) * HOUR_H,
-                              background: isToday
-                                ? "linear-gradient(180deg, var(--ember-soft), transparent 26%)"
-                                : weekend
-                                  ? "var(--paper-deep)"
-                                  : undefined,
-                              cursor: "crosshair",
-                              userSelect: "none",
-                            }}
-                            onMouseDown={(e) => {
-                              if (e.button !== 0) return;
-                              if ((e.target as HTMLElement).closest("button[data-event]")) return;
-                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                              const rawMin =
-                                ((e.clientY - rect.top) / HOUR_H) * 60 + START_HOUR * 60;
-                              const snapped = Math.round(rawMin / 30) * 30;
-                              const startMin = Math.min(
-                                Math.max(START_HOUR * 60, snapped),
-                                END_HOUR * 60 - 30,
-                              );
-                              dragRef.current = {
-                                day,
-                                startMin,
-                                colEl: e.currentTarget as HTMLElement,
-                              };
-                              const initial = { day, startMin, endMin: startMin + 60, col: c };
-                              dragStateRef.current = initial;
-                              setDrag(initial);
-                              e.preventDefault();
-
-                              const onMove = (me: MouseEvent) => {
-                                if (!dragRef.current) return;
-                                const r = dragRef.current.colEl.getBoundingClientRect();
-                                const raw = ((me.clientY - r.top) / HOUR_H) * 60 + START_HOUR * 60;
-                                const endMin = Math.min(
-                                  Math.max(
-                                    dragRef.current.startMin + 30,
-                                    Math.round(raw / 30) * 30,
-                                  ),
-                                  END_HOUR * 60,
-                                );
-                                dragStateRef.current = {
-                                  day,
-                                  startMin: dragRef.current.startMin,
-                                  endMin,
-                                };
-                                setDrag((d) => (d ? { ...d, endMin } : null));
-                              };
-                              const onUp = () => {
-                                window.removeEventListener("mousemove", onMove);
-                                window.removeEventListener("mouseup", onUp);
-                                const ds = dragStateRef.current;
-                                dragRef.current = null;
-                                dragStateRef.current = null;
-                                setDrag(null);
-                                if (!ds) return;
-                                setDialog({
-                                  mode: "create",
-                                  date: ds.day,
-                                  start: `${String(Math.floor(ds.startMin / 60)).padStart(2, "0")}:${String(ds.startMin % 60).padStart(2, "0")}`,
-                                  end: `${String(Math.floor(ds.endMin / 60)).padStart(2, "0")}:${String(ds.endMin % 60).padStart(2, "0")}`,
-                                });
-                              };
-                              window.addEventListener("mousemove", onMove);
-                              window.addEventListener("mouseup", onUp);
-                            }}
-                          >
-                            {Array.from(
-                              { length: END_HOUR - START_HOUR },
-                              (_, i) => START_HOUR + i,
-                            ).map((h) => (
-                              <div
-                                key={h}
-                                className="border-b"
-                                style={{ height: HOUR_H, borderColor: "#efeae0" }}
-                              />
-                            ))}
-
-                            {isToday && (
-                              <div
-                                className="absolute left-0 right-0 z-20 pointer-events-none"
-                                style={{ top: (nowDecimal() - START_HOUR) * HOUR_H }}
-                              >
-                                <span
-                                  className="absolute -left-1 -top-1 w-2 h-2 rounded-full"
-                                  style={{ background: "var(--ember)" }}
-                                />
-                                <span
-                                  className="absolute left-1.5 right-0 top-[-0.5px] h-[1.5px]"
-                                  style={{ background: "var(--ember)" }}
-                                />
-                              </div>
-                            )}
-
-                            {/* drag-to-create ghost */}
-                            {drag &&
-                              sameDay(drag.day, day) &&
-                              (() => {
-                                const topPx = (drag.startMin / 60 - START_HOUR) * HOUR_H;
-                                const heightPx = ((drag.endMin - drag.startMin) / 60) * HOUR_H;
-                                const sh = drag.startMin;
-                                const eh = drag.endMin;
-                                return (
-                                  <div
-                                    className="absolute left-1 right-1.5 rounded-lg px-2.5 py-1.5 pointer-events-none z-30 border-2"
-                                    style={{
-                                      top: topPx + 3,
-                                      height: Math.max(24, heightPx - 7),
-                                      background: "var(--tint-focus)",
-                                      borderColor: "var(--ember)",
-                                      opacity: 0.85,
-                                    }}
-                                  >
-                                    <span
-                                      className="block font-mono text-[9.5px] font-semibold"
-                                      style={{ color: "var(--ink-secondary)" }}
-                                    >
-                                      {fmt12(Math.floor(sh / 60), sh % 60)} –{" "}
-                                      {fmt12(Math.floor(eh / 60), eh % 60)}
-                                    </span>
-                                  </div>
-                                );
-                              })()}
-
-                            {dayOccs.map((o, i) => (
-                              <button
-                                type="button"
-                                // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                                key={o.ev.id + String(o.start.getTime()) + i}
-                                data-event="true"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (o.ev.id === "__status") return;
-                                  setPopover({
-                                    occ: { start: o.start, end: o.end, ev: o.ev },
-                                    x: e.clientX,
-                                    y: e.clientY,
-                                  });
-                                }}
-                                className="absolute left-1 right-1.5 rounded-lg px-2.5 py-1.5 text-xs overflow-hidden border text-left hover:brightness-95"
-                                style={{
-                                  top: Math.max(0, (o.s - START_HOUR) * HOUR_H) + 3,
-                                  height: Math.max(24, (o.e - o.s) * HOUR_H - 7),
-                                  background:
-                                    o.ev.id === "__status"
-                                      ? "var(--ember-soft)"
-                                      : tintFor(o.ev.color),
-                                  borderColor: "var(--color-border)",
-                                }}
-                              >
-                                <b className="block font-semibold">
-                                  <i
-                                    className="inline-block w-[7px] h-[7px] rounded-full mr-1.5 align-[1px]"
-                                    style={{
-                                      background:
-                                        o.ev.id === "__status" ? "var(--ember)" : o.ev.color,
-                                    }}
-                                  />
-                                  {o.ev.title}
-                                </b>
-                                <span
-                                  className="block font-mono text-[9.5px] mt-px"
-                                  style={{ color: "var(--ink-muted)" }}
-                                >
-                                  {fmt12(o.start.getHours(), o.start.getMinutes())}-
-                                  {fmt12(o.end.getHours(), o.end.getMinutes())}
-                                  {o.ev.recurrence !== "none" && ` · ${recurrenceLabel(o.ev)}`}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* event detail popover — fixed to viewport so scrolling doesn't misalign it */}
-                    {popover && (
-                      // biome-ignore lint/a11y/noStaticElementInteractions: click-away backdrop overlay
-                      // biome-ignore lint/a11y/useKeyWithClickEvents: click-away backdrop overlay
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={(e) => {
-                          if ((e.target as HTMLElement).closest("[data-popover-panel]")) return;
-                          setPopover(null);
-                        }}
-                      >
-                        <div
-                          data-popover-panel
-                          className="fixed rounded-xl border shadow-lg p-4 w-64"
-                          style={{
-                            background: "var(--card)",
-                            borderColor: "var(--color-border)",
-                            left: Math.min(popover.x, window.innerWidth - 280),
-                            top: Math.min(popover.y + 8, window.innerHeight - 200),
-                          }}
-                        >
-                          <div className="flex items-start gap-2">
-                            <i
-                              className="inline-block w-2.5 h-2.5 rounded-full mt-1 shrink-0"
-                              style={{ background: popover.occ.ev.color }}
-                            />
-                            <div>
-                              <b className="block font-serif-display text-[15px] font-semibold">
-                                {popover.occ.ev.title}
-                              </b>
-                              <span
-                                className="text-xs block mt-1"
-                                style={{ color: "var(--ink-secondary)" }}
-                              >
-                                {popover.occ.start.toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                })}{" "}
-                                ·{" "}
-                                {fmt12(
-                                  popover.occ.start.getHours(),
-                                  popover.occ.start.getMinutes(),
-                                )}{" "}
-                                – {fmt12(popover.occ.end.getHours(), popover.occ.end.getMinutes())}
-                              </span>
-                              {popover.occ.ev.recurrence !== "none" && (
-                                <span
-                                  className="text-xs block mt-1"
-                                  style={{ color: "var(--ink-muted)" }}
-                                >
-                                  ↻ {recurrenceLabel(popover.occ.ev)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <button
-                              type="button"
-                              className="btn-ink flex-1 justify-center"
-                              style={{ padding: "8px 0" }}
-                              onClick={() => setDialog({ mode: "edit", event: popover.occ.ev })}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="ghost-btn flex-1"
-                              style={{ color: "var(--status-busy)" }}
-                              onClick={() => deleteEvent.mutate({ id: popover.occ.ev.id })}
-                            >
-                              {deleteEvent.isPending ? "…" : "Delete"}
-                            </button>
-                          </div>
-                          <p className="text-[10.5px] mt-3" style={{ color: "var(--ink-muted)" }}>
-                            {popover.occ.ev.recurrence !== "none"
-                              ? "Changes apply to the whole series."
-                              : ""}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+            {(view === "day" || view === "week") && (
+              <DayWeekView
+                days={view === "day" ? [range.start] : weekDates}
+                occurrences={occurrences}
+                today={today}
+                nowDecimal={nowDecimalVal}
+                myStatus={myStatus}
+                workingHours={workingHours.data ?? []}
+                leaveSpans={leaveSpans}
+                onEventClick={(occ, e) => setPopover({ occ, x: e.clientX, y: e.clientY })}
+                onDragCreate={(day, start, end) =>
+                  setDialog({ mode: "create", date: day, start, end })
+                }
+                drag={drag ? { day: drag.day, startMin: drag.startMin, endMin: drag.endMin } : null}
+                statusMeta={statusMeta}
+              />
+            )}
 
             {/* ═══ MONTH ═══ */}
-            {view === "month" &&
-              (() => {
-                const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
-                const gridStart = weekStartOf(first);
-                const cells = Array.from({ length: 42 }, (_, i) => shift(gridStart, i));
-                return (
-                  <div className="flex flex-col min-h-full">
-                    <div
-                      className="grid border-b"
-                      style={{
-                        gridTemplateColumns: "repeat(7, 1fr)",
-                        borderColor: "var(--color-border)",
-                      }}
-                    >
-                      {DAYS.map((d) => (
-                        <div
-                          key={d}
-                          className="text-center py-2 font-mono text-[9.5px] uppercase tracking-widest"
-                          style={{ color: "var(--ink-muted)" }}
-                        >
-                          {d}
-                        </div>
-                      ))}
-                    </div>
-                    <div
-                      className="grid flex-1"
-                      style={{
-                        gridTemplateColumns: "repeat(7, 1fr)",
-                        gridTemplateRows: "repeat(6, minmax(96px, 1fr))",
-                      }}
-                    >
-                      {cells.map((d, i) => {
-                        const inMonth = d.getMonth() === anchor.getMonth();
-                        const isToday = sameDay(d, today);
-                        const occs = occurrences.filter((o) => sameDay(o.start, d));
-                        return (
-                          // biome-ignore lint/a11y/noStaticElementInteractions: pointer-driven calendar grid
-                          // biome-ignore lint/a11y/useKeyWithClickEvents: pointer-driven calendar grid
-                          <div
-                            // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                            key={i}
-                            onClick={() => {
-                              setAnchor(d);
-                              setView("day");
-                            }}
-                            className="border-b border-r p-1.5 cursor-pointer hover:bg-[var(--paper-deep)]"
-                            style={{
-                              borderColor: "var(--color-border)",
-                              background: isToday
-                                ? "var(--ember-soft)"
-                                : !inMonth
-                                  ? "var(--paper-deep)"
-                                  : undefined,
-                            }}
-                          >
-                            <div
-                              className={`font-mono text-[11px] w-5 h-5 leading-5 text-center rounded-full mb-1 ${isToday ? "text-white" : ""}`}
-                              style={
-                                isToday
-                                  ? { background: "var(--ember)" }
-                                  : { color: inMonth ? "var(--ink-secondary)" : "var(--ink-muted)" }
-                              }
-                            >
-                              {d.getDate()}
-                            </div>
-                            {occs.slice(0, 3).map((o, j) => (
-                              <div
-                                // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                                key={j}
-                                className="flex items-center gap-1 text-[10.5px] truncate mb-0.5"
-                              >
-                                <i
-                                  className="inline-block w-[6px] h-[6px] rounded-full shrink-0"
-                                  style={{ background: o.ev.color }}
-                                />
-                                <span className="truncate" style={{ color: "var(--ink-body)" }}>
-                                  {o.ev.title}
-                                </span>
-                              </div>
-                            ))}
-                            {occs.length > 3 && (
-                              <div
-                                className="text-[9.5px] font-medium"
-                                style={{ color: "var(--ember)" }}
-                              >
-                                +{occs.length - 3} more
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })()}
+            {/* ═══ MONTH ═══ */}
+            {view === "month" && (
+              <MonthView
+                anchor={anchor}
+                today={today}
+                occurrences={occurrences}
+                onDayClick={(d) => {
+                  setAnchor(d);
+                  setView("day");
+                }}
+              />
+            )}
 
             {/* ═══ SCHEDULE ═══ */}
-            {view === "schedule" &&
-              (() => {
-                const groups = new Map<string, typeof occurrences>();
-                for (const o of occurrences) {
-                  const k = dayKey(o.start);
-                  if (!groups.has(k)) groups.set(k, []);
-                  groups.get(k)!.push(o);
-                }
-                const keys = [...groups.keys()].sort();
-                if (keys.length === 0)
-                  return (
-                    <div
-                      className="py-20 text-center text-sm"
-                      style={{ color: "var(--ink-muted)" }}
-                    >
-                      No events in the next 60 days.
-                    </div>
-                  );
-                return (
-                  <div className="max-w-2xl">
-                    {keys.map((k) => {
-                      const list = groups.get(k)!;
-                      const d = list[0].start;
-                      return (
-                        <div key={k} className="mb-7">
-                          <div
-                            className="flex items-baseline gap-3 border-b pb-2 mb-2"
-                            style={{ borderColor: "var(--color-border-strong)" }}
-                          >
-                            <span
-                              className="font-serif-display italic text-[13px]"
-                              style={{ color: "var(--ember)" }}
-                            >
-                              {d.toLocaleDateString("en-US", { weekday: "long" })}
-                            </span>
-                            <span className="font-serif-display text-[15px] font-semibold">
-                              {d.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-                            </span>
-                          </div>
-                          {list.map((o, i) => (
-                            <button
-                              type="button"
-                              // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
-                              key={i}
-                              onClick={(e) => {
-                                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                const g = gridRef.current?.getBoundingClientRect();
-                                setPopover({
-                                  occ: o,
-                                  x: r.left - (g?.left ?? 0),
-                                  y: r.top - (g?.top ?? 0),
-                                });
-                              }}
-                              className="flex items-center gap-3 w-full text-left py-2 px-2 rounded-lg hover:bg-[var(--paper-deep)]"
-                            >
-                              <span
-                                className="font-mono text-[10px] w-20 shrink-0"
-                                style={{ color: "var(--ink-muted)" }}
-                              >
-                                {fmt12(o.start.getHours(), o.start.getMinutes())}
-                              </span>
-                              <span
-                                className="w-[3px] self-stretch rounded"
-                                style={{ background: o.ev.color }}
-                              />
-                              <span>
-                                <b className="block text-[12.5px] font-semibold">{o.ev.title}</b>
-                                <span className="text-[11px]" style={{ color: "var(--ink-muted)" }}>
-                                  until {fmt12(o.end.getHours(), o.end.getMinutes())}
-                                  {o.ev.recurrence !== "none" ? ` · ${recurrenceLabel(o.ev)}` : ""}
-                                </span>
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
+            {view === "schedule" && (
+              <ScheduleView
+                occurrences={occurrences as ScheduleOccurrence[]}
+                leaves={scheduleLeaves}
+                onEventClick={(occ, e) => {
+                  setPopover({
+                    occ,
+                    x: e.clientX,
+                    y: e.clientY,
+                  });
+                }}
+                emptyMessage="No events in the next 60 days."
+              />
+            )}
           </div>
         )}
       </div>
 
+      {/* ═══ event detail popover (all views) ═══ */}
+      {popover && (
+        <EventPopover
+          occ={popover.occ}
+          x={popover.x}
+          y={popover.y}
+          deletePending={deleteEvent.isPending}
+          onClose={() => setPopover(null)}
+          onEdit={() => {
+            setDialog({ mode: "edit", event: popover.occ.ev });
+            setPopover(null);
+          }}
+          onDelete={() => deleteWithUndo(popover.occ.ev)}
+        />
+      )}
+
       {/* ═══ create/edit dialog ═══ */}
       {dialog && me.data && (
         <EventDialog
+          key={
+            dialog.mode === "edit"
+              ? `edit-${dialog.event.id}`
+              : `create-${dayKey(dialog.date)}-${dialog.start}`
+          }
           mode={dialog.mode}
           initial={
             dialog.mode === "edit"

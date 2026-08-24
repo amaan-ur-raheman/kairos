@@ -13,6 +13,9 @@
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "@kairos/config": "workspace:*",
     "@types/bun": "catalog:",
