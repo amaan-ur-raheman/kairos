@@ -27,6 +27,7 @@ import { orpc } from "@/utils/orpc";
 import { STATUS_ORDER, statusMeta } from "@/utils/status";
 
 export const Route = createFileRoute("/team")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow, noarchive" }] }),
   component: TeamPage,
 });
 

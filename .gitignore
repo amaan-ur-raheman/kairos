@@ -61,3 +61,4 @@ temp
 pi-session-*.html
 .playwright-mcp/
 .env*
+!.env.example

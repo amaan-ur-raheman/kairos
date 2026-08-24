@@ -30,6 +30,7 @@ import { SaveBarError, Skeleton } from "@/components/states";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/settings")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow, noarchive" }] }),
   component: SettingsPage,
 });
 

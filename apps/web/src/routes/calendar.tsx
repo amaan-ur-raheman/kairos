@@ -29,6 +29,7 @@ import { orpc } from "@/utils/orpc";
 import { statusMeta } from "@/utils/status";
 
 export const Route = createFileRoute("/calendar")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow, noarchive" }] }),
   validateSearch: (search: Record<string, unknown>): { view?: View; d?: string } => ({
     view: ["day", "week", "month", "schedule"].includes(search.view as string)
       ? (search.view as View)

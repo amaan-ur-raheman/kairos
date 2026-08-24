@@ -16,3 +16,4 @@ Mobile mirror of the web app: calendar week view, team list/detail, status setti
 - Status labels/order and date helpers come from `@kairos/shared` — do not re-copy them here. Recurrence expansion uses the pure lib from `@kairos/api/lib/recurrence` (same module the web calendar imports).
 - Colors remain local (`lib/theme.ts`) because web uses CSS variables; keep hex values in `STATUS_COLORS` in sync with `apps/web/src/index.css`.
 - Requires `EXPO_PUBLIC_SERVER_URL` and `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in `.env`.
+- Native Google sign-in also requires the Google web and platform client IDs in `.env`; the Expo config copies them into `extra` for production bundles. Google sign-in requires a development/production native build, not Expo Go.

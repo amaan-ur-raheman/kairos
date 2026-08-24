@@ -1,3 +1,6 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /calendar
+Disallow: /team
+Disallow: /settings
+Disallow: /api/

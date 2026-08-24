@@ -15,6 +15,16 @@ const clerkAppearance = {
 };
 
 export const Route = createFileRoute("/sign-up")({
+  head: () => ({
+    meta: [
+      { title: "Create your Kairos workspace" },
+      {
+        name: "description",
+        content: "Create a Kairos workspace and make your team's availability easier to read.",
+      },
+      { name: "robots", content: "noindex, nofollow, noarchive" },
+    ],
+  }),
   component: SignUpPage,
 });
 

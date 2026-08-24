@@ -41,7 +41,26 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1.0" },
-      { title: "Kairos" },
+      { title: "Kairos — Team availability, at a glance" },
+      {
+        name: "description",
+        content:
+          "Kairos helps teams see who is available, focused, or away before they have to ask.",
+      },
+      { name: "theme-color", content: "#fffdf9" },
+      { property: "og:site_name", content: "Kairos" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://kairos.noctura.dpdns.org/kairos-og.png" },
+      { property: "og:image:alt", content: "Kairos team availability mark" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Kairos — Team availability, at a glance" },
+      {
+        name: "twitter:description",
+        content: "See who is free, focused, or away before you have to ask.",
+      },
+      { name: "twitter:image", content: "https://kairos.noctura.dpdns.org/kairos-og.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -74,8 +93,13 @@ function AuthGate() {
   }
 
   if (!isSignedIn) {
-    const isAuthPage = location.pathname === "/sign-in" || location.pathname === "/sign-up";
-    if (!isAuthPage) {
+    const isPublicPage =
+      location.pathname === "/" ||
+      location.pathname === "/sign-in" ||
+      location.pathname === "/sign-up" ||
+      location.pathname === "/privacy" ||
+      location.pathname === "/terms";
+    if (!isPublicPage) {
       router.navigate({ to: "/sign-in", search: { redirect: location.href } });
     }
     return <Outlet />;
