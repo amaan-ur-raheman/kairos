@@ -1,4 +1,5 @@
-import { DAYS } from "@/components/calendar/constants";
+import { Button } from "@kairos/ui/components/button";
+import { CALENDAR_GRID_MIN_WIDTH, DAYS } from "@/components/calendar/constants";
 import { dayKey, sameDay, shift } from "@/components/calendar/date-utils";
 import type { SavedEvent } from "@/components/calendar/types";
 import { weekStartOf } from "@/utils/dates";
@@ -23,7 +24,7 @@ export function MonthView({
   const cells = Array.from({ length: rowCount * 7 }, (_, i) => shift(gridStart, i));
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex min-h-full flex-col" style={{ minWidth: CALENDAR_GRID_MIN_WIDTH }}>
       {/* weekday headers */}
       <div
         className="grid border-b"
@@ -45,10 +46,11 @@ export function MonthView({
 
       {/* day cells */}
       <div
-        className="grid flex-1"
+        className="grid flex-1 border-l border-t"
         style={{
           gridTemplateColumns: "repeat(7, 1fr)",
-          gridTemplateRows: `repeat(${rowCount}, minmax(72px, 1fr))`,
+          gridTemplateRows: `repeat(${rowCount}, minmax(96px, 1fr))`,
+          borderColor: "var(--color-border)",
         }}
       >
         {cells.map((d) => {
@@ -56,12 +58,13 @@ export function MonthView({
           const isToday = sameDay(d, today);
           const occs = occurrences.filter((o) => sameDay(o.start, d));
           return (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               key={dayKey(d)}
               onClick={() => onDayClick(d)}
               aria-label={`${d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}${occs.length > 0 ? `, ${occs.length} event${occs.length === 1 ? "" : "s"}` : ""}`}
-              className="text-left border-b border-r p-1.5 cursor-pointer hover:bg-[var(--paper-deep)] focus-visible:outline-2 focus-visible:outline-[var(--ring)] focus-visible:-outline-offset-2"
+              className="h-full w-full flex-col items-start justify-start rounded-none border-b border-r p-1.5 text-left hover:bg-[var(--paper-deep)] focus-visible:outline-2 focus-visible:outline-[var(--ring)] focus-visible:-outline-offset-2"
               style={{
                 borderColor: "var(--color-border)",
                 background: isToday
@@ -83,28 +86,30 @@ export function MonthView({
                 {d.getDate()}
               </div>
 
-              {/* event dots — compact representation */}
+              {/* event titles — compact representation */}
               {occs.length > 0 && (
-                <div className="flex flex-wrap gap-[3px]">
-                  {occs.slice(0, 5).map((o) => (
+                <div className="mt-1 flex w-full min-w-0 flex-col gap-1 text-left">
+                  {occs.slice(0, 4).map((o) => (
                     <span
                       key={`${o.ev.id}-${o.start.getTime()}`}
-                      className="block w-[7px] h-[7px] rounded-full"
-                      style={{ background: o.ev.color }}
+                      className="block w-full min-w-0 truncate border-l-2 pl-1.5 font-sans text-[10px] font-medium leading-4 text-[var(--ink-secondary)]"
+                      style={{ borderLeftColor: o.ev.color }}
                       title={o.ev.title}
-                    />
+                    >
+                      {o.ev.title}
+                    </span>
                   ))}
-                  {occs.length > 5 && (
+                  {occs.length > 4 && (
                     <span
-                      className="text-[8px] font-mono leading-none pt-[1px]"
+                      className="font-mono text-[9px] leading-4 text-[var(--ink-muted)]"
                       style={{ color: "var(--ink-muted)" }}
                     >
-                      +{occs.length - 5}
+                      +{occs.length - 4} more
                     </span>
                   )}
                 </div>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>

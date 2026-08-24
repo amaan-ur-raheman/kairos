@@ -1,4 +1,6 @@
 import { recurrenceLabel } from "@kairos/api/lib/recurrence";
+import { Button } from "@kairos/ui/components/button";
+import { Separator } from "@kairos/ui/components/separator";
 import { fmt12 } from "@/components/calendar/date-utils";
 import type { Occurrence } from "@/components/calendar/types";
 
@@ -37,7 +39,7 @@ export function EventPopover({
         data-popover-panel
         role="dialog"
         aria-label={`Details for ${occ.ev.title}`}
-        className="fixed rounded-xl border p-4 w-56 sm:w-64"
+        className="fixed rounded-lg border p-4 w-56 sm:w-64"
         style={{
           background: "var(--card)",
           borderColor: "var(--color-border)",
@@ -69,23 +71,26 @@ export function EventPopover({
             )}
           </div>
         </div>
-        <div className="flex gap-2 mt-4">
-          <button
+        <Separator className="my-2" />
+        <div className="flex gap-2 mt-2">
+          <Button
             type="button"
-            className="btn-ink flex-1 justify-center"
+            variant="ghost"
+            className="flex-1 justify-center bg-[var(--ink)] text-[var(--paper)] hover:bg-[var(--ink)]/90"
             style={{ padding: "8px 0" }}
             onClick={onEdit}
           >
             Edit
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="ghost-btn flex-1"
+            variant="ghost"
+            className="flex-1 border border-[var(--color-border-strong)] bg-[var(--card)] text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)]"
             style={{ color: "var(--status-busy)" }}
             onClick={onDelete}
           >
             {deletePending ? "…" : "Delete"}
-          </button>
+          </Button>
         </div>
         {occ.ev.recurrence !== "none" && (
           <p className="text-[10.5px] mt-3" style={{ color: "var(--ink-muted)" }}>
