@@ -20,5 +20,24 @@ export default defineConfig({
     environment: "node",
     include: ["apps/**/__tests__/**/*.test.{ts,tsx}", "packages/**/__tests__/**/*.test.{ts,tsx}"],
     exclude: ["**/node_modules/**", "**/dist/**"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
+      reportsDirectory: "./coverage",
+      exclude: [
+        "node_modules/",
+        "dist/",
+        "**/*.d.ts",
+        "**/*.config.ts",
+        "**/__tests__/**",
+        "packages/db/src/schema/**",
+      ],
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 75,
+        lines: 80,
+      },
+    },
   },
 });

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos · Navbar Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#faf7f2; --paper-deep:#f3efe6; --card:#fffdf9;
+    --ink:#2b2620; --ink-secondary:#57503f; --ink-muted:#6f6754;
+    --ember:#c2410c; --ember-deep:#9a3412; --ember-soft:#fbe9dd;
+    --border:#e8e2d6; --border-subtle:#efeae0; --border-strong:#d8d0c0;
+    --ring:rgba(194,65,12,.35);
+    --serif:"Source Serif 4",Georgia,serif;
+    --sans:"Inter",-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    --ease-out:cubic-bezier(.23,1,.32,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; padding:48px 24px 96px;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-family:var(--serif);font-size:34px;font-weight:600;letter-spacing:-.02em}
+  .lede{font-family:var(--serif);font-style:italic;color:var(--ink-muted);font-size:15px;margin-top:6px}
+  .opt{margin-top:56px}
+  .opt-label{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .opt-num{font-family:var(--mono);font-size:11px;color:var(--ember);letter-spacing:.1em}
+  .opt-name{font-size:15px;font-weight:600}
+  .opt-desc{font-size:12.5px;color:var(--ink-muted)}
+  .frame{
+    border:1px solid var(--border-strong); border-radius:14px; overflow:hidden;
+    background:var(--card); box-shadow:0 1px 3px rgba(43,38,32,.05);
+  }
+  .frame-inner{padding:28px;background:
+    linear-gradient(var(--paper) 0 0);
+    min-height:120px; position:relative}
+  /* fake page hint inside frame */
+  .frame-inner::before{content:'';position:absolute;top:20px;left:28px;width:180px;height:10px;border-radius:5px;background:var(--border-subtle)}
+  .frame-inner::after{content:'';position:absolute;top:40px;left:28px;width:260px;height:10px;border-radius:5px;background:var(--border-subtle)}
+
+  /* ── shared navbar bits ── */
+  .bar{position:relative;z-index:2;display:flex;align-items:center;height:60px;padding:0 32px;background:var(--card)}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .brand-mark{width:25px;height:25px;border-radius:50%;background:var(--ember);color:#fff;display:grid;place-items:center;font:700 11px var(--sans)}
+  .brand-name{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:-.01em;color:var(--ink)}
+  .links{display:flex;align-items:center}
+  .link{ text-decoration:none;font-size:13.5px;font-weight:500;color:var(--ink-muted);
+         transition:color 150ms var(--ease-out); }
+  .link:hover{color:var(--ink)}
+  .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .org{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--ink-secondary);
+       padding:6px 10px;border-radius:8px;cursor:pointer;transition:background 150ms var(--ease-out)}
+  .org:hover{background:var(--paper-deep)}
+  .org-dot{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--ember),#e05e24);flex-shrink:0}
+  .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#57503f,#2b2620);
+          display:grid;place-items:center;color:#fff;font:600 11px var(--sans);
+          box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ember)}
+  .kbd-hint{font-family:var(--mono);font-size:10.5px;color:var(--ink-muted)}
+
+  /* ── Option 1 · Current (baseline) ── */
+  .v1 .bar{border-bottom:3px double var(--border-strong)}
+  .v1 .links{gap:22px;margin-left:24px}
+  .v1 .link{position:relative;padding:8px 0}
+  .v1 .link.active{color:var(--ember);text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
+
+  /* ── Option 2 · Flush underline (full-height links) ── */
+  .v2 .bar{height:60px;padding:0;border-bottom:1px solid var(--border)}
+  .v2 .brand{margin-left:32px;height:100%}
+  .v2 .links{height:100%;gap:4px;margin-left:36px}
+  .v2 .link{position:relative;display:inline-flex;align-items:center;height:100%;padding:0 16px}
+  .v2 .link::after{content:'';position:absolute;left:14px;right:14px;bottom:-1px;height:2.5px;border-radius:2px 2px 0 0;
+                   background:var(--ember);transform:scaleX(0);transform-origin:center;transition:transform 200ms var(--ease-out)}
+  .v2 .link:hover::after{transform:scaleX(.55)}
+  .v2 .link.active{color:var(--ember)}
+  .v2 .link.active::after{transform:scaleX(1)}
+  .v2 .right{padding-right:32px}
+
+  /* ── Option 3 · Segmented pills (matches calendar seg-views) ── */
+  .v3 .bar{border-bottom:1px solid var(--border)}
+  .v3 .links{margin-left:28px;background:var(--paper-deep);border-radius:999px;padding:3px;gap:2px}
+  .v3 .link{padding:6px 16px;border-radius:999px;transition:background 150ms var(--ease-out),color 150ms var(--ease-out)}
+  .v3 .link.active{background:var(--card);color:var(--ember);box-shadow:0 1px 3px rgba(43,38,32,.08)}
+  .v3 .link:not(.active):hover{color:var(--ink)}
+
+  /* ── Option 4 · Ember dot, quiet editorial ── */
+  .v4 .bar{border-bottom:1px solid var(--border)}
+  .v4 .links{gap:28px;margin-left:40px}
+  .v4 .link{display:inline-flex;align-items:center;gap:7px}
+  .v4 .link i{width:5px;height:5px;border-radius:50%;background:var(--ember);opacity:0;transform:scale(0);
+              transition:opacity 160ms var(--ease-out),transform 160ms var(--ease-out)}
+  .v4 .link.active{color:var(--ink);font-weight:600}
+  .v4 .link.active i{opacity:1;transform:scale(1)}
+  .v4 .brand-name em{font-style:italic;color:var(--ember)}
+
+  /* ── Option 5 · Masthead split (serif-centered) ── */
+  .v5{background:var(--card)}
+  .v5-top{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 32px;border-bottom:1px solid var(--border-subtle)}
+  .v5-mid{text-align:center;padding:14px 0 12px;border-bottom:3px double var(--border-strong);position:relative}
+  .v5-brand{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:.02em}
+  .v5-brand span{color:var(--ember)}
+  .v5-tag{font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--ink-muted);margin-top:2px}
+  .v5-links{display:flex;justify-content:center;gap:34px;margin-top:10px}
+  .v5 .link{font-family:var(--serif);font-style:normal;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+  .v5 .link.active{color:var(--ember);text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:1px}
+
+  /* ── Option 6 · Floating paper bar ── */
+  .v6 .stage{background:var(--paper-deep);padding:22px 28px 26px;min-height:130px}
+  .float-bar{display:flex;align-items:center;height:54px;padding:0 8px 0 20px;max-width:760px;margin:0 auto;
+             background:var(--card);border:1px solid var(--border);border-radius:999px;
+             box-shadow:0 4px 16px rgba(43,38,32,.08),0 1px 3px rgba(43,38,32,.05)}
+  .float-links{display:flex;gap:2px;margin-left:26px}
+  .float-links .link{padding:7px 15px;border-radius:999px}
+  .float-links .link.active{background:var(--ember-soft);color:var(--ember-deep);font-weight:600}
+  .float-right{margin-left:auto;display:flex;align-items:center;gap:10px;padding-right:8px}
+
+  @media(max-width:720px){
+    .bar{padding:0 18px}
+    .v2 .brand{margin-left:18px}.v2 .right{padding-right:18px}
+    .links{display:none!important}
+    .burger{display:grid!important;margin-left:auto}
+    .right{display:none}
+  }
+  .burger{display:none;width:40px;height:40px;place-items:center;border:none;background:none;border-radius:8px;color:var(--ink-secondary);cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Navbar options</h1>
+  <p class="lede">Six directions for the Kairos top bar — same tokens, different structure. Pick a number.</p>
+
+  <!-- ══ 1 ══ -->
+  <section class="opt v1">
+    <div class="opt-label"><span class="opt-num">01</span><span class="opt-name">Current baseline</span><span class="opt-desc">— for comparison</span></div>
+    <div class="frame"><div class="frame-inner"><div class="bar">
+      <a class="brand" href="#"><span class="brand-mark">K</span><span class="brand-name">kairos</span></a>
+      <nav class="links">
+        <a class="link active" href="#">Calendar</a><a class="link" href="#">Team</a><a class="link" href="#">Settings</a>
+      </nav>
+      <div class="right"><span class="org"><span class="org-dot"></span>Fieldnote Studio ▾</span><span class="avatar">SM</span></div>
+    </div></div></div>
+  </section>
+
+  <!-- ══ 2 ══ -->
+  <section class="opt v2">
+    <div class="opt-label"><span class="opt-num">02</span><span class="opt-name">Flush underline</span><span class="desc opt-desc">— full-height hit areas, indicator grows into the bottom rule</span></div>
+    <div class="frame"><div class="frame-inner"><div class="bar">
+      <a class="brand" href="#"><span class="brand-mark">K</span><span class="brand-name">kairos</span></a>
+      <nav class="links">
+        <a class="link active" href="#">Calendar</a><a class="link" href="#">Team</a><a class="link" href="#">Settings</a>
+      </nav>
+      <div class="right"><span class="org"><span class="org-dot"></span>Fieldnote Studio ▾</span><span class="avatar">SM</span></div>
+      <button class="burger">☰</button>
+    </div></div></div>
+  </section>
+
+  <!-- ══ 3 ══ -->
+  <section class="opt v3">
+    <div class="opt-label"><span class="opt-num">03</span><span class="opt-name">Segmented pills</span><span class="opt-desc">— mirrors the Day/Week/Month switcher you already have</span></div>
+    <div class="frame"><div class="frame-inner"><div class="bar">
+      <a class="brand" href="#"><span class="brand-mark">K</span><span class="brand-name">kairos</span></a>
+      <nav class="links">
+        <a class="link active" href="#">Calendar</a><a class="link" href="#">Team</a><a class="link" href="#">Settings</a>
+      </nav>
+      <div class="right"><span class="org"><span class="org-dot"></span>Fieldnote Studio ▾</span><span class="avatar">SM</span></div>
+      <button class="burger">☰</button>
+    </div></div></div>
+  </section>
+
+  <!-- ══ 4 ══ -->
+  <section class="opt v4">
+    <div class="opt-label"><span class="opt-num">04</span><span class="opt-name">Quiet editorial dot</span><span class="opt-desc">— ink links, tiny ember marker pops in when active</span></div>
+    <div class="frame"><div class="frame-inner"><div class="bar">
+      <a class="brand" href="#"><span class="brand-mark">K</span><span class="brand-name">kair<em>o</em>s</span></a>
+      <nav class="links">
+        <a class="link active" href="#"><i></i>Calendar</a><a class="link" href="#"><i></i>Team</a><a class="link" href="#"><i></i>Settings</a>
+      </nav>
+      <div class="right"><span class="org"><span class="org-dot"></span>Fieldnote Studio ▾</span><span class="avatar">SM</span></div>
+      <button class="burger">☰</button>
+    </div></div></div>
+  </section>
+
+  <!-- ══ 5 ══ -->
+  <section class="opt v5">
+    <div class="opt-label"><span class="opt-num">05</span><span class="opt-name">Masthead</span><span class="opt-desc">— newspaper-style: utility strip, centered serif wordmark, caps links below</span></div>
+    <div class="frame"><div class="frame-inner" style="padding-top:0"><div style="position:relative;z-index:2">
+      <div class="v5-top">
+        <span class="kbd-hint">MON · AUG 24</span>
+        <span class="kbd-hint">WEEK 35</span>
+      </div>
+      <div class="v5-mid">
+        <div class="v5-brand">kair<span>o</span>s</div>
+        <div class="v5-tag">who's around?</div>
+        <nav class="v5-links">
+          <a class="link active" href="#">Calendar</a><a class="link" href="#">Team</a><a class="link" href="#">Settings</a>
+        </nav>
+      </div>
+    </div></div></div>
+  </section>
+
+  <!-- ══ 6 ══ -->
+  <section class="opt v6">
+    <div class="opt-label"><span class="opt-num">06</span><span class="opt-name">Floating paper bar</span><span class="opt-desc">— detached pill over the canvas, soft shadow</span></div>
+    <div class="frame"><div class="frame-inner stage">
+      <div class="float-bar">
+        <a class="brand" href="#"><span class="brand-mark">K</span><span class="brand-name">kairos</span></a>
+        <nav class="float-links">
+          <a class="link active" href="#">Calendar</a><a class="link" href="#">Team</a><a class="link" href="#">Settings</a>
+        </nav>
+        <div class="float-right"><span class="avatar" style="box-shadow:none">SM</span></div>
+      </div>
+    </div></div>
+  </section>
+
+</div>
+</body>
+</html>

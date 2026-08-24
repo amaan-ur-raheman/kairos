@@ -1,0 +1,12 @@
+---
+coverage:
+  reportFile: ./coverage/coverage-final.json
+  branch-patterns:
+    - '*.ts'
+    - '*.tsx'
+  src-dir: ./packages
+  exclusions:
+    - 'node_modules/**'
+    - 'dist/**'
+    - '.turbo/**'
+    - '.vercel/**'

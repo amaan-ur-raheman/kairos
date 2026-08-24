@@ -33,6 +33,10 @@ This project uses PostgreSQL (Neon) with Drizzle ORM and **versioned migrations*
 1. Make sure you have a PostgreSQL database set up.
 2. Update your `apps/server/.env` file with your connection details.
 
+For migrations, `DATABASE_URL_DIRECT` may be set to a direct Neon endpoint. If it is
+omitted, the migration config automatically removes Neon’s `-pooler` hostname marker.
+The application runtime continues using `DATABASE_URL` for serverless HTTP queries.
+
 3. Apply migrations to the database:
 
 ```bash
