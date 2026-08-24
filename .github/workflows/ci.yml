@@ -34,6 +34,8 @@ jobs:
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           restore-keys: bun-${{ runner.os }}-
       - run: bun install --frozen-lockfile
+      # TanStack Router generates routeTree.gen.ts during the Vite build.
+      - run: bun run build
       - run: bun run check-types
 
   build-and-test:
