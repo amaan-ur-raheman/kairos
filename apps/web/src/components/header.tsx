@@ -1,4 +1,5 @@
 import { OrganizationSwitcher, UserButton, useAuth } from "@clerk/tanstack-react-start";
+import { Button } from "@kairos/ui/components/button";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -47,13 +48,7 @@ export default function Header() {
           to="/calendar"
           className="flex items-center gap-2.5 font-serif-display font-semibold text-[19px] tracking-[-0.01em]"
         >
-          <span
-            aria-hidden
-            className="w-[25px] h-[25px] rounded-full grid place-items-center text-white text-[11px] font-bold"
-            style={{ background: "var(--ember)", fontFamily: "var(--font-sans)" }}
-          >
-            K
-          </span>
+          <img src="/kairos-logo.png" alt="" aria-hidden="true" className="size-7 object-contain" />
           kairos
         </Link>
 
@@ -90,16 +85,18 @@ export default function Header() {
             </div>
             <UserButton />
             {/* Mobile menu toggle */}
-            <button
+            <Button
               type="button"
-              className="icon-btn md:hidden"
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 border-0 text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)] hover:text-[var(--ink)] md:hidden"
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileOpen((v) => !v)}
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            </Button>
           </>
         ) : isLoaded ? (
           <span className="text-[13px]" style={{ color: "var(--ink-muted)" }}>

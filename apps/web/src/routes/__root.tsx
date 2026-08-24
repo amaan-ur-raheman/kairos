@@ -45,6 +45,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/kairos-logo.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -89,7 +90,7 @@ function AuthGate() {
             Select or create a workspace to get started.
           </p>
           <div
-            className="mt-8 overflow-hidden rounded-xl border p-5 text-left"
+            className="mt-8 overflow-hidden rounded-lg border p-5 text-left"
             style={{ borderColor: "var(--color-border)", background: "var(--card)" }}
           >
             <OrganizationList
@@ -124,8 +125,12 @@ function RootDocument() {
         <body>
           <AuthGate />
           <Toaster richColors />
-          <TanStackRouterDevtools position="bottom-left" />
-          <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+          {import.meta.env.DEV && (
+            <>
+              <TanStackRouterDevtools position="bottom-left" />
+              <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+            </>
+          )}
           <Scripts />
         </body>
       </html>
