@@ -1,4 +1,6 @@
 import { expandOccurrences, type Recurrence, recurrenceLabel } from "@kairos/api/lib/recurrence";
+import { Button } from "@kairos/ui/components/button";
+import { Tabs, TabsList, TabsTrigger } from "@kairos/ui/components/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -15,7 +17,9 @@ export const Route = createFileRoute("/team/$id")({
 /* ── constants (mirrors calendar.tsx) ── */
 const START_HOUR = 7;
 const END_HOUR = 21;
-const HOUR_H = 60;
+const HOUR_H = 72;
+const teamPageClass =
+  "mx-auto w-full max-w-[920px] px-4 pb-[60px] pt-6 sm:px-[30px] sm:pb-[70px] sm:pt-[34px]";
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const VIEW_ORDER = ["day", "week", "month", "schedule"] as const;
@@ -218,7 +222,7 @@ function MemberPage() {
 
   if (isLoading) {
     return (
-      <div className="page-team">
+      <div className={teamPageClass}>
         <Skeleton className="h-4 w-24 mb-4" />
         <div className="flex gap-5 mt-5">
           <Skeleton className="w-16 h-16 rounded-full" />
@@ -228,7 +232,7 @@ function MemberPage() {
           </div>
         </div>
         <div
-          className="mt-6 h-[520px] rounded-xl border"
+          className="mt-6 h-[520px] rounded-lg border"
           style={{ borderColor: "var(--color-border)", background: "var(--card)" }}
         />
       </div>
@@ -237,7 +241,7 @@ function MemberPage() {
 
   if (!m) {
     return (
-      <div className="page-team text-center">
+      <div className={`${teamPageClass} text-center`}>
         <h1 className="font-serif-display text-2xl font-semibold">Member not found</h1>
         <Link
           to="/team"
@@ -260,12 +264,6 @@ function MemberPage() {
     ? (STATUS_META[myStatus.status as keyof typeof STATUS_META]?.color ?? "var(--status-offline)")
     : "var(--status-offline)";
   const whByDow = new Map((workingHours.data ?? []).map((h) => [h.dayOfWeek, h]));
-
-  const viewBtn = (v: View, label: string) => (
-    <button type="button" key={v} onClick={() => setView(v)} className={view === v ? "on" : ""}>
-      {label}
-    </button>
-  );
 
   return (
     <div className="h-full flex flex-col lg:flex-row overflow-hidden">
@@ -305,7 +303,9 @@ function MemberPage() {
         {/* Status */}
         {myStatus && (
           <section className="mt-6">
-            <h3 className="rail-label">Status</h3>
+            <h3 className="mb-[11px] border-b border-[var(--color-border)] pb-[7px] font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--ink-tertiary)]">
+              Status
+            </h3>
             <div
               className="border p-3.5"
               style={{
@@ -339,7 +339,9 @@ function MemberPage() {
 
         {/* Week summary */}
         <section className="mt-6">
-          <h3 className="rail-label">This week</h3>
+          <h3 className="mb-[11px] border-b border-[var(--color-border)] pb-[7px] font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--ink-tertiary)]">
+            This week
+          </h3>
           <div className="space-y-0.5">
             {occurrences
               .filter((o) => {
@@ -385,7 +387,9 @@ function MemberPage() {
 
         {/* Contact */}
         <section className="mt-6 pb-4 space-y-2">
-          <h3 className="rail-label">Contact</h3>
+          <h3 className="mb-[11px] border-b border-[var(--color-border)] pb-[7px] font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--ink-tertiary)]">
+            Contact
+          </h3>
           <a
             href={`mailto:${m.email}`}
             className="block text-[12.5px] font-semibold hover:underline"
@@ -451,39 +455,53 @@ function MemberPage() {
           <span className="font-mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
             {range.label}
           </span>
-          <div className="seg-views ml-auto">
-            {viewBtn("day", "Day")}
-            {viewBtn("week", "Week")}
-            {viewBtn("month", "Month")}
-            {viewBtn("schedule", "Schedule")}
-          </div>
+          <Tabs value={view} onValueChange={(value) => setView(value as View)} className="ml-auto">
+            <TabsList
+              className="flex rounded-lg bg-[var(--paper-deep)] p-[3px]"
+              aria-label="Calendar view"
+            >
+              <TabsTrigger value="day">Day</TabsTrigger>
+              <TabsTrigger value="week">Week</TabsTrigger>
+              <TabsTrigger value="month">Month</TabsTrigger>
+              <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {view !== "schedule" && (
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 aria-label="Previous"
                 onClick={() => navigate(-1)}
-                className="wk-btn"
+                className="h-10 w-10 rounded-lg border border-[var(--color-border-strong)] bg-[var(--card)] text-base text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)]"
               >
                 ‹
-              </button>
-              <button type="button" onClick={goToday} className="wk-today">
-                Today
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                onClick={goToday}
+                className="rounded-lg border-[var(--color-border-strong)] px-[18px] py-[11px] text-[12.5px] text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)]"
+              >
+                Today
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
                 aria-label="Next"
                 onClick={() => navigate(1)}
-                className="wk-btn"
+                className="h-10 w-10 rounded-lg border border-[var(--color-border-strong)] bg-[var(--card)] text-base text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)]"
               >
                 ›
-              </button>
+              </Button>
             </div>
           )}
         </div>
 
         <div className="px-6 lg:px-7">
-          <div className="kbd-hints">
+          <div className="px-0 pb-2 text-[11px] text-[var(--ink-muted)] [&_b]:font-mono [&_b]:font-medium [&_b]:text-[var(--ink-secondary)]">
             Shortcuts: <b>D</b>ay · <b>W</b>eek · <b>M</b>onth · <b>S</b>chedule · <b>T</b>oday ·{" "}
             <b>←</b>/<b>→</b> navigate · View only
           </div>
@@ -502,14 +520,14 @@ function MemberPage() {
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-auto px-6 lg:px-7 pb-6">
+        <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto overscroll-contain px-6 pb-6 lg:px-7">
           {/* ═══ DAY / WEEK ═══ */}
           {(view === "day" || view === "week") &&
             (() => {
               const days = view === "day" ? [range.start] : weekDates;
               const cols = days.length;
               return (
-                <div ref={gridRef} style={{ minWidth: cols === 1 ? 0 : 720 }}>
+                <div ref={gridRef} style={{ minWidth: cols === 1 ? 0 : 960 }}>
                   <div
                     className="grid pb-2.5 sticky top-0 z-10 bg-[var(--paper)]"
                     style={{ gridTemplateColumns: `48px repeat(${cols}, 1fr)` }}
@@ -551,8 +569,11 @@ function MemberPage() {
                         (h) => (
                           <span
                             key={h}
-                            className="absolute right-2.5 -translate-y-1/2 font-mono text-[9.5px]"
-                            style={{ top: (h - START_HOUR) * HOUR_H, color: "var(--ink-muted)" }}
+                            className={`absolute right-2.5 font-mono text-[9.5px] ${h === START_HOUR ? "" : "-translate-y-1/2"}`}
+                            style={{
+                              top: Math.max(12, (h - START_HOUR) * HOUR_H),
+                              color: "var(--ink-muted)",
+                            }}
                           >
                             {fmt12(h)}
                           </span>
@@ -655,8 +676,9 @@ function MemberPage() {
 
                           {/* events */}
                           {dayOccs.map((o, i) => (
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
                               // biome-ignore lint/suspicious/noArrayIndexKey: static/derived list, never reordered
                               key={o.ev.id + String(o.start.getTime()) + i}
                               onClick={(e) => {
@@ -667,7 +689,7 @@ function MemberPage() {
                                   y: e.clientY,
                                 });
                               }}
-                              className="absolute left-1 right-1.5 rounded-lg px-2.5 py-1.5 text-xs overflow-hidden border text-left hover:brightness-95"
+                              className="absolute left-1 right-1.5 flex h-auto min-h-0 flex-col items-start justify-start gap-0 overflow-hidden rounded-lg border px-2.5 py-1.5 text-left text-xs whitespace-normal hover:brightness-95"
                               style={{
                                 top: Math.max(0, (o.s - START_HOUR) * HOUR_H) + 3,
                                 height: Math.max(24, (o.e - o.s) * HOUR_H - 7),
@@ -675,7 +697,7 @@ function MemberPage() {
                                 borderColor: "var(--color-border)",
                               }}
                             >
-                              <b className="block font-semibold">
+                              <b className="block w-full truncate font-semibold">
                                 <i
                                   className="inline-block w-[7px] h-[7px] rounded-full mr-1.5 align-[1px]"
                                   style={{ background: o.ev.color }}
@@ -683,14 +705,13 @@ function MemberPage() {
                                 {o.ev.title}
                               </b>
                               <span
-                                className="block font-mono text-[9.5px] mt-px"
+                                className="mt-px block w-full truncate font-mono text-[9.5px]"
                                 style={{ color: "var(--ink-muted)" }}
                               >
                                 {fmt12(o.start.getHours(), o.start.getMinutes())}–
                                 {fmt12(o.end.getHours(), o.end.getMinutes())}
-                                {o.ev.recurrence !== "none" && ` · ${recurrenceLabel(o.ev)}`}
                               </span>
-                            </button>
+                            </Button>
                           ))}
                         </div>
                       );
@@ -712,7 +733,7 @@ function MemberPage() {
                         data-popover-panel
                         role="dialog"
                         aria-label={`Details for ${popover.occ.ev.title}`}
-                        className="fixed rounded-xl border shadow-lg p-4 w-64"
+                        className="fixed rounded-lg border shadow-lg p-4 w-64"
                         style={{
                           background: "var(--card)",
                           borderColor: "var(--color-border)",
@@ -752,8 +773,9 @@ function MemberPage() {
                             )}
                           </div>
                         </div>
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
                           className="mt-4 w-full text-center text-xs font-medium py-2 rounded-lg border"
                           style={{
                             borderColor: "var(--color-border-strong)",
@@ -762,7 +784,7 @@ function MemberPage() {
                           onClick={() => setPopover(null)}
                         >
                           Close
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}

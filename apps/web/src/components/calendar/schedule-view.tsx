@@ -1,4 +1,5 @@
 import { recurrenceLabel } from "@kairos/api/lib/recurrence";
+import { Button } from "@kairos/ui/components/button";
 import { dayKey, fmt12 } from "@/components/calendar/date-utils";
 import type { Occurrence } from "@/components/calendar/types";
 
@@ -21,11 +22,19 @@ type Props = {
 
 const MAX_LEAVE_WALK_DAYS = 366 * 2;
 
-function DayHeading({ d, isLeaveDay }: { d: Date; isLeaveDay: boolean }) {
+function DayHeading({
+  d,
+  isLeaveDay,
+  eventCount,
+}: {
+  d: Date;
+  isLeaveDay: boolean;
+  eventCount: number;
+}) {
   const isToday = dayKey(d) === dayKey(new Date());
   return (
     <div
-      className="flex items-baseline gap-3 border-b pb-2.5 mb-3"
+      className="sticky top-0 z-10 mb-3 flex items-baseline gap-3 border-b bg-[var(--paper)] py-2.5"
       style={{ borderColor: "var(--color-border)" }}
     >
       <span
@@ -37,6 +46,11 @@ function DayHeading({ d, isLeaveDay }: { d: Date; isLeaveDay: boolean }) {
       <span className="font-serif-display text-[16px] font-semibold">
         {d.toLocaleDateString(undefined, { month: "long", day: "numeric" })}
       </span>
+      {eventCount > 0 && (
+        <span className="font-mono text-[10px] text-[var(--ink-muted)]">
+          {eventCount} {eventCount === 1 ? "event" : "events"}
+        </span>
+      )}
       {isToday && (
         <span
           className="text-[9.5px] font-mono px-1.5 py-0.5 rounded-full"
@@ -47,7 +61,7 @@ function DayHeading({ d, isLeaveDay }: { d: Date; isLeaveDay: boolean }) {
       )}
       {isLeaveDay && (
         <span
-          className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+          className="text-[10px] font-mono px-1.5 py-0.5 rounded-lg"
           style={{
             background: "var(--tint-leave, var(--tint-busy))",
             color: "var(--status-busy)",
@@ -103,32 +117,32 @@ export function ScheduleView({ occurrences, leaves, onEventClick, emptyMessage }
         >
           {fmt12(o.start.getHours(), o.start.getMinutes())}
         </span>
-        <span
-          className="w-[3px] self-stretch rounded-sm shrink-0"
-          style={{ background: o.ev.color }}
-        />
+        <span className="mt-1.5 size-2 shrink-0 rounded-full" style={{ background: o.ev.color }} />
         <div className="min-w-0 flex-1">
           <b className="block text-[13px] font-semibold truncate">{o.ev.title}</b>
           <span className="text-[11.5px]" style={{ color: "var(--ink-muted)" }}>
-            until {fmt12(o.end.getHours(), o.end.getMinutes())}
+            {fmt12(o.start.getHours(), o.start.getMinutes())}–
+            {fmt12(o.end.getHours(), o.end.getMinutes())}
             {o.ev.recurrence !== "none" && <span className="ml-1">· {recurrenceLabel(o.ev)}</span>}
           </span>
         </div>
       </>
     );
     return onEventClick ? (
-      <button
+      <Button
         type="button"
+        variant="ghost"
         key={`${k}-${o.ev.id}-${i}`}
         onClick={(e) => onEventClick(o, e)}
-        className="flex items-start gap-3 w-full text-left py-2.5 px-2.5 rounded-lg hover:bg-[var(--paper-deep)] transition-colors duration-150"
+        aria-label={`${o.ev.title}, ${fmt12(o.start.getHours(), o.start.getMinutes())} to ${fmt12(o.end.getHours(), o.end.getMinutes())}`}
+        className="flex h-auto min-h-0 w-full items-start justify-start gap-3 rounded-lg px-2.5 py-2.5 text-left whitespace-normal transition-colors duration-150 hover:bg-[var(--paper-deep)]"
       >
         {inner}
-      </button>
+      </Button>
     ) : (
       <div
         key={`${k}-${o.ev.id}-${i}`}
-        className="flex items-start gap-3 w-full text-left py-2.5 px-2.5 rounded-lg"
+        className="flex w-full items-start gap-3 rounded-lg px-2.5 py-2.5 text-left"
       >
         {inner}
       </div>
@@ -143,7 +157,7 @@ export function ScheduleView({ occurrences, leaves, onEventClick, emptyMessage }
 
         return (
           <div key={k} className="mb-8">
-            <DayHeading d={d} isLeaveDay={leaveDayKeys.has(k)} />
+            <DayHeading d={d} eventCount={list.length} isLeaveDay={leaveDayKeys.has(k)} />
             <div className="space-y-0.5">{list.map((o, i) => renderRow(o, k, i))}</div>
           </div>
         );
@@ -158,7 +172,7 @@ export function ScheduleView({ occurrences, leaves, onEventClick, emptyMessage }
           const dt = new Date(y, m - 1, d);
           return (
             <div key={k} className="mb-8">
-              <DayHeading d={dt} isLeaveDay />
+              <DayHeading d={dt} eventCount={0} isLeaveDay />
               <p
                 className="text-[12.5px] py-2.5 px-2.5 italic"
                 style={{ color: "var(--ink-muted)" }}

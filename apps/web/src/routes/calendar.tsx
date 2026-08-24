@@ -1,4 +1,6 @@
 import { expandOccurrences, type Recurrence } from "@kairos/api/lib/recurrence";
+import { Button } from "@kairos/ui/components/button";
+import { Tabs, TabsList, TabsTrigger } from "@kairos/ui/components/tabs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
@@ -200,8 +202,11 @@ function CalendarPage() {
   }, [view, anchor, weekDates]);
 
   const navigate = (dir: -1 | 1) => {
-    const step =
-      view === "day" ? dir : view === "week" ? dir * 7 : view === "month" ? dir * 30 : dir * 7;
+    if (view === "month") {
+      setAnchor(new Date(anchor.getFullYear(), anchor.getMonth() + dir, 1));
+      return;
+    }
+    const step = view === "day" ? dir : dir * 7;
     setAnchor(shift(anchor, step));
   };
   const goToday = () => setAnchor(new Date());
@@ -353,19 +358,6 @@ function CalendarPage() {
     setPopover(null);
   }, [view, anchor]);
 
-  const viewBtn = (v: View, label: string) => (
-    <button
-      type="button"
-      key={v}
-      role="tab"
-      aria-selected={view === v}
-      onClick={() => setView(v)}
-      className={view === v ? "on" : ""}
-    >
-      {label}
-    </button>
-  );
-
   return (
     <div className="h-full flex flex-col lg:flex-row overflow-hidden">
       {/* ══ Today rail ══ */}
@@ -398,7 +390,9 @@ function CalendarPage() {
         </p>
 
         <section className="mt-6">
-          <h2 className="rail-label">Your status</h2>
+          <h2 className="mb-[11px] border-b border-[var(--color-border)] pb-[7px] font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--ink-tertiary)]">
+            Your status
+          </h2>
           {railLoading && !myStatus ? (
             <div
               className="border p-3.5"
@@ -456,7 +450,9 @@ function CalendarPage() {
         </section>
 
         <section className="mt-6">
-          <h2 className="rail-label">Next up today</h2>
+          <h2 className="mb-[11px] border-b border-[var(--color-border)] pb-[7px] font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--ink-tertiary)]">
+            Next up today
+          </h2>
           {nextUp.length === 0 ? (
             <p className="text-[12.5px] py-2" style={{ color: "var(--ink-muted)" }}>
               Nothing scheduled today.
@@ -487,7 +483,9 @@ function CalendarPage() {
         </section>
 
         <section className="mt-6 pb-4">
-          <h2 className="rail-label">Team pulse</h2>
+          <h2 className="mb-[11px] border-b border-[var(--color-border)] pb-[7px] font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--ink-tertiary)]">
+            Team pulse
+          </h2>
           {teamPulse.map((p) => (
             <div key={p.k} className="flex justify-between items-center py-1.5 text-[12.5px]">
               <span className="flex items-center gap-2" style={{ color: "var(--ink-secondary)" }}>
@@ -512,42 +510,62 @@ function CalendarPage() {
               ? anchor.toLocaleDateString("en-US", { month: "long", year: "numeric" })
               : "Calendar"}
           </h1>
-          <span
-            className="font-mono text-[11px] hidden sm:inline"
-            style={{ color: "var(--ink-muted)" }}
+          {view !== "month" && (
+            <span
+              className="font-mono text-[11px] hidden sm:inline"
+              style={{ color: "var(--ink-muted)" }}
+            >
+              {range.label}
+            </span>
+          )}
+          <Tabs
+            value={view}
+            onValueChange={(value) => setView(value as View)}
+            className="ml-auto shrink-0"
           >
-            {range.label}
-          </span>
-          <div className="seg-views ml-auto shrink-0" role="tablist" aria-label="Calendar view">
-            {viewBtn("day", "Day")}
-            {viewBtn("week", "Week")}
-            {viewBtn("month", "Month")}
-            {viewBtn("schedule", "Schedule")}
-          </div>
+            <TabsList
+              className="flex rounded-lg bg-[var(--paper-deep)] p-[3px]"
+              aria-label="Calendar view"
+            >
+              <TabsTrigger value="day">Day</TabsTrigger>
+              <TabsTrigger value="week">Week</TabsTrigger>
+              <TabsTrigger value="month">Month</TabsTrigger>
+              <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {view !== "schedule" && (
             <div className="hidden sm:flex items-center gap-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 aria-label="Previous"
                 onClick={() => navigate(-1)}
-                className="wk-btn"
+                className="h-10 w-10 rounded-lg border border-[var(--color-border-strong)] bg-[var(--card)] text-base text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)]"
               >
                 ‹
-              </button>
-              <button type="button" onClick={goToday} className="wk-today">
-                Today
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                onClick={goToday}
+                className="rounded-lg border-[var(--color-border-strong)] px-[18px] py-[11px] text-[12.5px] text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)]"
+              >
+                Today
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
                 aria-label="Next"
                 onClick={() => navigate(1)}
-                className="wk-btn"
+                className="h-10 w-10 rounded-lg border border-[var(--color-border-strong)] bg-[var(--card)] text-base text-[var(--ink-secondary)] hover:bg-[var(--paper-deep)]"
               >
                 ›
-              </button>
+              </Button>
             </div>
           )}
-          <button
+          <Button
             type="button"
             onClick={() =>
               setDialog({
@@ -557,12 +575,45 @@ function CalendarPage() {
                 end: "10:00",
               })
             }
-            className="btn-ember press-scale shrink-0 whitespace-nowrap"
+            className="shrink-0 whitespace-nowrap bg-[var(--ember)] text-white hover:bg-[var(--ember-deep)] active:scale-[.97]"
           >
             <Plus size={14} />
             <span className="hidden sm:inline">New event</span>
-          </button>
+          </Button>
         </div>
+
+        {view !== "schedule" && (
+          <div className="flex items-center justify-between px-4 pb-3 sm:hidden">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Previous"
+              onClick={() => navigate(-1)}
+              className="border border-[var(--color-border-strong)] bg-[var(--card)] text-[var(--ink-secondary)]"
+            >
+              ‹
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goToday}
+              className="border-[var(--color-border-strong)] px-4 text-[12px] text-[var(--ink-secondary)]"
+            >
+              Today
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Next"
+              onClick={() => navigate(1)}
+              className="border border-[var(--color-border-strong)] bg-[var(--card)] text-[var(--ink-secondary)]"
+            >
+              ›
+            </Button>
+          </div>
+        )}
 
         {pageError && !isLoading && (
           <div className="px-6 lg:px-7 pt-4">
@@ -579,7 +630,7 @@ function CalendarPage() {
         {isLoading ? (
           <div className="flex-1 px-6 lg:px-7 pb-8 space-y-4">
             <Skeleton className="h-9 w-56" />
-            <Skeleton className="h-[460px] w-full rounded-xl" />
+            <Skeleton className="h-[460px] w-full rounded-lg" />
           </div>
         ) : !me.data ? (
           <div
@@ -589,7 +640,7 @@ function CalendarPage() {
             Make sure you're a member of an organization.
           </div>
         ) : (
-          <div className="flex-1 min-h-0 overflow-auto px-6 lg:px-7 pb-6">
+          <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto overscroll-contain px-6 pb-6 lg:px-7">
             {/* ═══ DAY / WEEK ═══ */}
             {(view === "day" || view === "week") && (
               <DayWeekView

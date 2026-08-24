@@ -2,7 +2,8 @@
 
 export const START_HOUR = 7;
 export const END_HOUR = 21;
-export const HOUR_H = 60;
+export const HOUR_H = 72;
+export const CALENDAR_GRID_MIN_WIDTH = 960;
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export const DAY_FULL = [
   "Sunday",

@@ -1,6 +1,13 @@
-import { recurrenceLabel } from "@kairos/api/lib/recurrence";
+import { Button } from "@kairos/ui/components/button";
 import { useState } from "react";
-import { DAY_FULL, END_HOUR, HOUR_H, START_HOUR, tintFor } from "@/components/calendar/constants";
+import {
+  CALENDAR_GRID_MIN_WIDTH,
+  DAY_FULL,
+  END_HOUR,
+  HOUR_H,
+  START_HOUR,
+  tintFor,
+} from "@/components/calendar/constants";
 import { dayKey, fmt12, parseHM, sameDay } from "@/components/calendar/date-utils";
 import type { SavedEvent } from "@/components/calendar/types";
 
@@ -74,15 +81,14 @@ export function DayWeekView({
   };
 
   return (
-    <div className="relative" style={{ minWidth: cols === 1 ? 0 : 720 }}>
-      {/* mobile scroll hint */}
+    <div className="relative" style={{ minWidth: cols === 1 ? 0 : CALENDAR_GRID_MIN_WIDTH }}>
       {cols > 1 && (
         <div
-          className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none sm:hidden z-10"
-          style={{
-            background: "linear-gradient(to right, transparent, var(--paper))",
-          }}
-        />
+          className="mb-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-[var(--ink-muted)] sm:hidden"
+          aria-hidden="true"
+        >
+          Scroll for more days <span aria-hidden="true">→</span>
+        </div>
       )}
       {/* all-day strip (leave) */}
       {leaveSpans.spans.length > 0 && days.length > 1 && (
@@ -112,7 +118,7 @@ export function DayWeekView({
             {leaveSpans.spans.map((sp) => (
               <div
                 key={sp.id}
-                className="absolute rounded-md border px-2 flex items-center text-[11px] font-medium z-10"
+                className="absolute rounded-lg border px-2 flex items-center text-[11px] font-medium z-10"
                 style={{
                   left: `calc(48px + ${(sp.startCol / cols) * 100}% + 4px)`,
                   width: `calc(${((sp.endCol - sp.startCol + 1) / cols) * 100}% - 8px)`,
@@ -177,8 +183,8 @@ export function DayWeekView({
           {Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i).map((h) => (
             <span
               key={h}
-              className="absolute right-2.5 -translate-y-1/2 font-mono text-[9.5px]"
-              style={{ top: (h - START_HOUR) * HOUR_H, color: "var(--ink-muted)" }}
+              className={`absolute right-2.5 font-mono text-[9.5px] ${h === START_HOUR ? "" : "-translate-y-1/2"}`}
+              style={{ top: Math.max(12, (h - START_HOUR) * HOUR_H), color: "var(--ink-muted)" }}
             >
               {fmt12(h)}
             </span>
@@ -241,7 +247,7 @@ export function DayWeekView({
             // biome-ignore lint/a11y/noStaticElementInteractions: pointer-driven calendar grid
             <div
               key={dayKey(day)}
-              className="relative border-l"
+              className="group relative border-l transition-colors duration-150 hover:bg-[var(--paper-deep)]"
               style={{
                 borderColor: "var(--color-border)",
                 minHeight: (END_HOUR - START_HOUR) * HOUR_H,
@@ -313,8 +319,9 @@ export function DayWeekView({
 
               {/* event blocks */}
               {dayOccs.map((o) => (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   key={`${o.ev.id}-${o.start.getTime()}-${o.lane}`}
                   data-event="true"
                   onClick={(e) => {
@@ -322,7 +329,7 @@ export function DayWeekView({
                     if (o.ev.id === "__status") return;
                     onEventClick({ ev: o.ev, start: o.start, end: o.end }, e);
                   }}
-                  className="ev-block absolute rounded-lg px-2.5 py-1.5 text-xs overflow-hidden border text-left"
+                  className="ev-block absolute flex h-auto min-h-0 w-auto flex-col items-start justify-start gap-0 overflow-hidden rounded-lg border px-2.5 py-1.5 text-left text-xs whitespace-normal"
                   style={{
                     top: Math.max(0, (o.s - START_HOUR) * HOUR_H) + 3,
                     height: Math.max(24, (o.e - o.s) * HOUR_H - 7),
@@ -332,7 +339,7 @@ export function DayWeekView({
                     borderColor: "var(--color-border)",
                   }}
                 >
-                  <b className="block font-semibold">
+                  <b className="block w-full truncate font-semibold">
                     <i
                       className="inline-block w-[7px] h-[7px] rounded-full mr-1.5 align-[1px]"
                       style={{
@@ -342,14 +349,13 @@ export function DayWeekView({
                     {o.ev.title}
                   </b>
                   <span
-                    className="block font-mono text-[9.5px] mt-px"
+                    className="mt-px block w-full truncate font-mono text-[9.5px]"
                     style={{ color: "var(--ink-muted)" }}
                   >
-                    {fmt12(o.start.getHours(), o.start.getMinutes())}-
+                    {fmt12(o.start.getHours(), o.start.getMinutes())}–
                     {fmt12(o.end.getHours(), o.end.getMinutes())}
-                    {o.ev.recurrence !== "none" && ` · ${recurrenceLabel(o.ev)}`}
                   </span>
-                </button>
+                </Button>
               ))}
 
               {/* empty state */}
