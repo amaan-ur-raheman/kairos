@@ -15,6 +15,13 @@ const clerkAppearance = {
 };
 
 export const Route = createFileRoute("/sign-in")({
+  head: () => ({
+    meta: [
+      { title: "Sign in to Kairos" },
+      { name: "description", content: "Sign in to see your team's availability in Kairos." },
+      { name: "robots", content: "noindex, nofollow, noarchive" },
+    ],
+  }),
   component: SignInPage,
 });
 
